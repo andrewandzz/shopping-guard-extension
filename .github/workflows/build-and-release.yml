@@ -37,3 +37,4 @@ jobs:
         with:
           name: shopping-guard-extension
           path: shopping-guard-extension.zip
+          compression-level: 0
