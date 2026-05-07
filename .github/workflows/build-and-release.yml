@@ -27,14 +27,8 @@ jobs:
           cp content.js dist/
           cp -r images dist/
 
-      - name: Create ZIP archive
-        run: |
-          cd dist
-          zip -r ../shopping-guard-extension.zip .
-
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
         with:
           name: shopping-guard-extension
-          path: shopping-guard-extension.zip
-          compression-level: 0
+          path: dist/
