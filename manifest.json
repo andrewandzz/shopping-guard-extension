@@ -2,28 +2,31 @@
   "manifest_version": 3,
   "name": "Shopping Guard",
   "version": "1.0.0",
-  "description": "Тестовий додаток для браузера",
-  "icons": {
-    "16": "images/icon16.png",
-    "48": "images/icon48.png",
-    "128": "images/icon128.png"
-  },
-  "action": {
-    "default_popup": "popup.html"
-  },
+  "description": "Browser extension for detecting risky one-page product-selling websites.",
   "permissions": [
+    "tabs",
     "activeTab",
     "scripting",
-    "tabs"
+    "storage"
   ],
-  "content_scripts": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "content.js"
-      ]
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Shopping Guard",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/default16.png",
+      "48": "icons/default48.png",
+      "128": "icons/default128.png"
     }
-  ]
+  },
+  "icons": {
+    "16": "icons/default16.png",
+    "48": "icons/default48.png",
+    "128": "icons/default128.png"
+  }
 }

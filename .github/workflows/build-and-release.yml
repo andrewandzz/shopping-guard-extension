@@ -23,9 +23,12 @@ jobs:
           mkdir dist
           cp manifest.json dist/
           cp popup.html dist/
+          cp popup.css dist/
           cp popup.js dist/
+          cp background.js dist/
           cp content.js dist/
-          cp -r images dist/
+          cp rules.js dist/
+          cp -r icons dist/
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4

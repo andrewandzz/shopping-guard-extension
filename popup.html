@@ -2,14 +2,22 @@
 <html lang="uk">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shopping Guard</title>
+    <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <h3>Мій тестовий додаток</h3>
+    <div class="container">
+      <h1>Shopping Guard</h1>
 
-    <h3 id="risk-level">Рівень ризику:</h3>
-    <p id="risk-score"></p>
-    <ul id="risk-signals"></ul>
+      <p id="page-type" class="page-type">Тип сторінки: —</p>
+      <p id="risk-level" class="risk-level">Рівень ризику: —</p>
+      <p id="risk-score" class="risk-score">Бали ризику: —</p>
+      <p id="message" class="message"></p>
+
+      <h2>Виявлені ознаки</h2>
+      <ul id="risk-signals" class="signals-list"></ul>
+    </div>
 
     <script src="popup.js"></script>
   </body>

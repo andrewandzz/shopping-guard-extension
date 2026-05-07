@@ -1,0 +1,41 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  min-width: 360px;
+  background: #f7f7f7;
+  color: #222;
+}
+
+.container {
+  padding: 16px;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+h2 {
+  margin-top: 16px;
+  font-size: 16px;
+}
+
+.page-type,
+.risk-level,
+.risk-score,
+.message {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.signals-list {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.signals-list li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
