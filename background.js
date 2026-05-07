@@ -1,4 +1,4 @@
-importScripts("rules.js");
+importScripts("analysis.js", "config.js");
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") return;

@@ -25,9 +25,10 @@ jobs:
           cp popup.html dist/
           cp popup.css dist/
           cp popup.js dist/
+          cp config.js dist/
           cp background.js dist/
           cp content.js dist/
-          cp rules.js dist/
+          cp analysis.js dist/
           cp -r icons dist/
 
       - name: Upload ZIP artifact

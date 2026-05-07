@@ -1,14 +1,14 @@
 function checkReturnPolicy(text) {
   const textLower = text.toLowerCase();
 
-  const keywords = ["повернення", "обмін", "refund", "return"];
-
-  const hasReturnInfo = keywords.some((keyword) => textLower.includes(keyword));
+  const hasReturnInfo = CONFIG.keywords.return.some((keyword) =>
+    textLower.includes(keyword),
+  );
 
   if (!hasReturnInfo) {
     return {
-      score: 2,
-      message: "Не знайдено інформацію про повернення або обмін товару.",
+      score: CONFIG.riskScores.noReturnPolicy,
+      message: CONFIG.messages.noReturnPolicy,
     };
   }
 
@@ -18,16 +18,14 @@ function checkReturnPolicy(text) {
 function checkWarranty(text) {
   const textLower = text.toLowerCase();
 
-  const keywords = ["гарант", "warranty"];
-
-  const hasWarrantyInfo = keywords.some((keyword) =>
+  const hasWarrantyInfo = CONFIG.keywords.warranty.some((keyword) =>
     textLower.includes(keyword),
   );
 
   if (!hasWarrantyInfo) {
     return {
-      score: 2,
-      message: "Не знайдено інформацію про гарантію.",
+      score: CONFIG.riskScores.noWarranty,
+      message: CONFIG.messages.noWarranty,
     };
   }
 
@@ -37,14 +35,14 @@ function checkWarranty(text) {
 function checkContacts(text) {
   const textLower = text.toLowerCase();
 
-  const keywords = ["контакт", "адреса", "email", "@", "телефон"];
-
-  const hasContacts = keywords.some((keyword) => textLower.includes(keyword));
+  const hasContacts = CONFIG.keywords.contact.some((keyword) =>
+    textLower.includes(keyword),
+  );
 
   if (!hasContacts) {
     return {
-      score: 2,
-      message: "Не знайдено контактної інформації продавця.",
+      score: CONFIG.riskScores.noContacts,
+      message: CONFIG.messages.noContacts,
     };
   }
 
@@ -54,24 +52,14 @@ function checkContacts(text) {
 function checkAggressiveMarketing(text) {
   const textLower = text.toLowerCase();
 
-  const keywords = [
-    "тільки сьогодні",
-    "залишилось",
-    "встигн",
-    "акці",
-    "зниж",
-    "останні товари",
-    "обмежена пропозиція",
-  ];
-
-  const hasAggressiveMarketing = keywords.some((keyword) =>
-    textLower.includes(keyword),
+  const hasAggressiveMarketing = CONFIG.keywords.aggressiveMarketing.some(
+    (keyword) => textLower.includes(keyword),
   );
 
   if (hasAggressiveMarketing) {
     return {
-      score: 1,
-      message: `Виявлено ознаки агресивної реклами.`,
+      score: CONFIG.riskScores.aggressiveMarketing,
+      message: CONFIG.messages.aggressiveMarketing,
     };
   }
 
@@ -89,24 +77,14 @@ function checkPrice(text) {
 function checkLegalInfo(text) {
   const textLower = text.toLowerCase();
 
-  const legalWords = [
-    "єдрпоу",
-    "іпн",
-    "фоп",
-    "тов",
-    "юридична адреса",
-    "оферт",
-    "політика конфіденційності",
-    "умови використання",
-    "реквізити",
-  ];
-
-  const hasLegalInfo = legalWords.some((word) => textLower.includes(word));
+  const hasLegalInfo = CONFIG.keywords.legal.some((word) =>
+    textLower.includes(word),
+  );
 
   if (!hasLegalInfo) {
     return {
-      score: 2,
-      message: "Не знайдено юридичної інформації про продавця.",
+      score: CONFIG.riskScores.noLegalInfo,
+      message: CONFIG.messages.noLegalInfo,
     };
   }
 
@@ -121,34 +99,20 @@ function checkFormsRequireDeliveryInfo(formsData) {
     .map((formData) => Object.values(formData).flat().join(" ").toLowerCase())
     .join("\n---\n");
 
-  const nameKeywords = ["ім'я", "name"];
-  const phoneKeywords = ["телефон", "phone", "tel"];
-  const deliveryKeywords = [
-    "адрес",
-    "міст",
-    "відділення",
-    "пошта",
-    "доставк",
-    "delivery",
-    "address",
-    "city",
-  ];
-
-  const hasNameField = nameKeywords.some((keyword) =>
+  const hasNameField = CONFIG.keywords.form.name.some((keyword) =>
     formsContent.includes(keyword),
   );
-  const hasPhoneField = phoneKeywords.some((keyword) =>
+  const hasPhoneField = CONFIG.keywords.form.phone.some((keyword) =>
     formsContent.includes(keyword),
   );
-  const hasDeliveryField = deliveryKeywords.some((keyword) =>
+  const hasDeliveryField = CONFIG.keywords.form.delivery.some((keyword) =>
     formsContent.includes(keyword),
   );
 
   if (hasNameField && hasPhoneField && !hasDeliveryField) {
     return {
-      score: 2,
-      message:
-        "У формі замовлення не знайдено полів для введення адреси або даних про доставку.",
+      score: CONFIG.riskScores.nameAndPhoneOnlyForm,
+      message: CONFIG.messages.nameAndPhoneOnlyForm,
     };
   }
 
@@ -191,50 +155,28 @@ function checkDomain(url) {
     return null;
   }
 
-  const trustedZones = [
-    ".ua",
-    ".com",
-    ".net",
-    ".org",
-    ".shop",
-    ".store",
-    ".biz",
-    ".info",
-  ];
+  const hasTrustedZone = CONFIG.domainZones.trusted.some((zone) =>
+    hostname.endsWith(zone),
+  );
 
-  const freeOrSuspiciousZones = [
-    ".tk",
-    ".ml",
-    ".ga",
-    ".cf",
-    ".gq",
-    ".xyz",
-    ".top",
-    ".site",
-    ".online",
-    ".click",
-  ];
-
-  const hasTrustedZone = trustedZones.some((zone) => hostname.endsWith(zone));
-
-  const hasSuspiciousZone = freeOrSuspiciousZones.some((zone) =>
+  const hasSuspiciousZone = CONFIG.domainZones.suspicious.some((zone) =>
     hostname.endsWith(zone),
   );
 
   let score = 0;
 
   if (!hasTrustedZone) {
-    score += 1;
+    score += CONFIG.riskScores.nonTrustedDomainZone;
   }
 
   if (hasSuspiciousZone) {
-    score += 1;
+    score += CONFIG.riskScores.suspiciousDomainZone;
   }
 
   if (score > 0) {
     return {
       score,
-      message: `Домен сайту має нетипову або потенційно підозрілу доменну зону: .${hostname.split(".").at(-1)}.`,
+      message: CONFIG.messages.suspiciousDomainZone,
     };
   }
 
@@ -242,26 +184,20 @@ function checkDomain(url) {
 }
 
 function detectPageType(text, url) {
-  const hasProductIntent =
-    text.includes("купити") ||
-    text.includes("замовити") ||
-    text.includes("ціна") ||
-    text.includes("грн") ||
-    text.includes("₴");
+  const textLower = text.toLowerCase();
+  const urlLower = url.toLowerCase();
 
-  const hasNormalShopStructure =
-    text.includes("кошик") ||
-    text.includes("каталог") ||
-    text.includes("додати в кошик") ||
-    text.includes("особистий кабінет") ||
-    text.includes("фільтр") ||
-    text.includes("сортування");
+  const hasProductIntent = CONFIG.keywords.pageType.product.some((word) =>
+    textLower.includes(word),
+  );
+
+  const hasNormalShopStructure = CONFIG.keywords.pageType.normalShop.some(
+    (word) => textLower.includes(word),
+  );
 
   const isCheckoutPage =
-    url.includes("checkout") ||
-    url.includes("cart") ||
-    url.includes("order") ||
-    text.includes("оформлення замовлення");
+    ["checkout", "cart", "order"].some((word) => urlLower.includes(word)) ||
+    CONFIG.keywords.pageType.checkout.some((word) => textLower.includes(word));
 
   // const hasQuickOrderForm = formsData.some((formData) => {
   //   const formText = formData.searchText.toLowerCase();
@@ -274,18 +210,18 @@ function detectPageType(text, url) {
   // });
 
   if (!hasProductIntent) {
-    return "not_product_page";
+    return "not_product_page"; // TODO: make type
   }
-  8;
+
   if (hasNormalShopStructure && /*!hasQuickOrderForm &&*/ !isCheckoutPage) {
-    return "normal_shop_page";
+    return "normal_shop_page"; // TODO: make type
   }
 
   // if (hasQuickOrderForm) {
   //   return "quick_order_landing";
   // }
 
-  return "unknown_product_page";
+  return "unknown_product_page"; // TODO: make type
 }
 
 function analyzePageData(pageData) {
@@ -297,7 +233,7 @@ function analyzePageData(pageData) {
       totalScore: 0,
       signals: [],
       pageType,
-      message: "Сторінка не схожа на сторінку продажу товару.",
+      message: CONFIG.messages.notProductPage,
       analyzedAt: new Date().toISOString(),
     };
   }
@@ -308,7 +244,7 @@ function analyzePageData(pageData) {
       totalScore: 0,
       signals: [],
       pageType,
-      message: "Сторінка схожа на звичайний інтернет-магазин або маркетплейс.",
+      message: CONFIG.messages.normalShopPage,
       analyzedAt: new Date().toISOString(),
     };
   }
@@ -332,11 +268,11 @@ function analyzePageData(pageData) {
 
   const totalScore = signals.reduce((sum, signal) => sum + signal.score, 0);
 
-  let riskLevel = "low";
+  let riskLevel = "low"; // TODO: make type
 
-  if (totalScore >= 7) {
+  if (totalScore >= CONFIG.riskThresholds.high) {
     riskLevel = "high";
-  } else if (totalScore >= 4) {
+  } else if (totalScore >= CONFIG.riskThresholds.medium) {
     riskLevel = "medium";
   }
 
