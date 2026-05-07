@@ -229,7 +229,7 @@ function analyzePageData(pageData) {
 
   if (pageType === "not_product_page") {
     return {
-      riskLevel: null,
+      riskLevel: "not_analyzed",
       totalScore: 0,
       signals: [],
       pageType,

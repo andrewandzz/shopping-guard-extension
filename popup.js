@@ -1,6 +1,8 @@
 /// <reference types="chrome" />
 
 document.addEventListener("DOMContentLoaded", async () => {
+  setStaticPopupTexts();
+
   const [tab] = await chrome.tabs.query({
     active: true,
     currentWindow: true,
@@ -15,22 +17,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!result) {
       document.getElementById("risk-level").textContent =
-        "Рівень ризику: аналіз ще не виконано";
-      document.getElementById("risk-score").textContent = "Бали ризику: —";
-      document.getElementById("page-type").textContent = "Тип сторінки: —";
-      document.getElementById("message").textContent =
-        "Результат аналізу поки що недоступний.";
+        `${CONFIG.ui.riskLevelLabel}: ${CONFIG.ui.riskLevelPending}`;
+
+      document.getElementById("risk-score").textContent =
+        `${CONFIG.ui.riskScoreLabel}: ${CONFIG.ui.valueUnavailable}`;
+
+      document.getElementById("page-type").textContent =
+        `${CONFIG.ui.pageTypeLabel}: ${CONFIG.ui.valueUnavailable}`;
+
+      document.getElementById("message").textContent = CONFIG.ui.noAnalysisYet;
+
       return;
     }
 
     document.getElementById("risk-level").textContent =
-      `Рівень ризику: ${result.riskLevel}`;
+      `${CONFIG.ui.riskLevelLabel}: ${formatRiskLevel(result.riskLevel)}`;
 
     document.getElementById("risk-score").textContent =
-      `Бали ризику: ${result.totalScore}`;
+      `${CONFIG.ui.riskScoreLabel}: ${result.totalScore}`;
 
     document.getElementById("page-type").textContent =
-      `Тип сторінки: ${formatPageType(result.pageType)}`;
+      `${CONFIG.ui.pageTypeLabel}: ${formatPageType(result.pageType)}`;
 
     document.getElementById("message").textContent = result.message || "";
 
@@ -39,8 +46,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!result.signals || result.signals.length === 0) {
       const li = document.createElement("li");
-      li.textContent = "Підозрілих ознак не виявлено.";
+      li.textContent = CONFIG.ui.noRiskSignals;
       signalsList.appendChild(li);
+
       return;
     }
 
@@ -52,17 +60,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
+function setStaticPopupTexts() {
+  document.getElementById("popup-title").textContent = CONFIG.ui.popupTitle;
+  document.getElementById("signals-title").textContent = CONFIG.ui.signalsTitle;
+}
+
+function formatRiskLevel(riskLevel) {
+  return CONFIG.ui.riskLevels[riskLevel] || CONFIG.ui.valueUnavailable;
+}
+
 function formatPageType(pageType) {
-  switch (pageType) {
-    case "not_product_page":
-      return "не товарна сторінка";
-    case "normal_shop_page":
-      return "звичайний інтернет-магазин";
-    // case "quick_order_landing":
-    // return "landing page зі швидким замовленням";
-    case "unknown_product_page":
-      return "невизначена товарна сторінка";
-    default:
-      return "невідомо";
-  }
+  return CONFIG.ui.pageTypes[pageType] || CONFIG.ui.valueUnavailable;
 }

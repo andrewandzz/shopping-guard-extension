@@ -8,17 +8,18 @@
   </head>
   <body>
     <div class="container">
-      <h1>Shopping Guard</h1>
+      <h1 id="popup-title"></h1>
 
-      <p id="page-type" class="page-type">Тип сторінки: —</p>
-      <p id="risk-level" class="risk-level">Рівень ризику: —</p>
-      <p id="risk-score" class="risk-score">Бали ризику: —</p>
+      <p id="page-type" class="page-type"></p>
+      <p id="risk-level" class="risk-level"></p>
+      <p id="risk-score" class="risk-score"></p>
       <p id="message" class="message"></p>
 
-      <h2>Виявлені ознаки</h2>
+      <h2 id="signals-title"></h2>
       <ul id="risk-signals" class="signals-list"></ul>
     </div>
 
+    <script src="config.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

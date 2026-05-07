@@ -61,74 +61,86 @@ function updateExtensionStatus(tabId, result) {
       setWarningIcon(tabId);
       break;
     case "low":
-      setGreenIcon(tabId);
+      setSafeIcon(tabId);
       break;
     default:
-      setWhiteIcon(tabId);
+      setNeutralIcon(tabId);
       break;
   }
 }
 
 function setDangerIcon(tabId) {
-  chrome.action.setBadgeText({ tabId, text: "X" });
-  chrome.action.setBadgeBackgroundColor({ tabId, color: "#d93025" });
+  chrome.action.setBadgeText({
+    tabId,
+    text: CONFIG.backgroundUi.badges.highRisk.text,
+  });
+  chrome.action.setBadgeBackgroundColor({
+    tabId,
+    color: CONFIG.backgroundUi.badges.highRisk.color,
+  });
   chrome.action.setTitle({
     tabId,
-    title: "Shopping Guard: Виявлено високий ризик!",
+    title: CONFIG.backgroundUi.titles.highRisk,
   });
   chrome.action.setIcon({
     tabId,
-    path: {
-      16: "icons/red16.png",
-      48: "icons/red48.png",
-    },
+    path: CONFIG.backgroundUi.icons.danger,
   });
 }
 
 function setWarningIcon(tabId) {
-  chrome.action.setBadgeText({ tabId, text: "!" });
-  chrome.action.setBadgeBackgroundColor({ tabId, color: "#f9ab00" });
+  chrome.action.setBadgeText({
+    tabId,
+    text: CONFIG.backgroundUi.badges.mediumRisk.text,
+  });
+  chrome.action.setBadgeBackgroundColor({
+    tabId,
+    color: CONFIG.backgroundUi.badges.mediumRisk.color,
+  });
   chrome.action.setTitle({
     tabId,
-    title: "Shopping Guard: Можливий ризик.",
+    title: CONFIG.backgroundUi.titles.mediumRisk,
   });
   chrome.action.setIcon({
     tabId,
-    path: {
-      16: "icons/amber16.png",
-      48: "icons/amber48.png",
-    },
+    path: CONFIG.backgroundUi.icons.warning,
   });
 }
 
-function setGreenIcon(tabId) {
-  chrome.action.setBadgeText({ tabId, text: "\u2713" });
-  chrome.action.setBadgeBackgroundColor({ tabId, color: "#22c55e" });
+function setSafeIcon(tabId) {
+  chrome.action.setBadgeText({
+    tabId,
+    text: CONFIG.backgroundUi.badges.lowRisk.text,
+  });
+  chrome.action.setBadgeBackgroundColor({
+    tabId,
+    color: CONFIG.backgroundUi.badges.lowRisk.color,
+  });
   chrome.action.setTitle({
     tabId,
-    title: "Shopping Guard: Низький рівень ризику.",
+    title: CONFIG.backgroundUi.titles.lowRisk,
   });
   chrome.action.setIcon({
     tabId,
-    path: {
-      16: "icons/green16.png",
-      48: "icons/green48.png",
-    },
+    path: CONFIG.backgroundUi.icons.safe,
   });
 }
 
-function setWhiteIcon(tabId) {
-  chrome.action.setBadgeText({ tabId, text: "\u2014" });
-  chrome.action.setBadgeBackgroundColor({ tabId, color: "#f0f0f0" });
+function setNeutralIcon(tabId) {
+  chrome.action.setBadgeText({
+    tabId,
+    text: CONFIG.backgroundUi.badges.notAnalyzed.text,
+  });
+  chrome.action.setBadgeBackgroundColor({
+    tabId,
+    color: CONFIG.backgroundUi.badges.notAnalyzed.color,
+  });
   chrome.action.setTitle({
     tabId,
-    title: "Shopping Guard: Сторінка не підлягає аналізу.",
+    title: CONFIG.backgroundUi.titles.notAnalyzed,
   });
   chrome.action.setIcon({
     tabId,
-    path: {
-      16: "icons/grey16.png",
-      48: "icons/grey48.png",
-    },
+    path: CONFIG.backgroundUi.icons.neutral,
   });
 }

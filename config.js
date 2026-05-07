@@ -153,4 +153,74 @@ const CONFIG = {
     normalShopPage:
       "Сторінка схожа на звичайний інтернет-магазин або маркетплейс.",
   },
+
+  ui: {
+    popupTitle: "Shopping Guard",
+    riskLevelLabel: "Рівень ризику",
+    riskScoreLabel: "Бали ризику",
+    pageTypeLabel: "Тип сторінки",
+    signalsTitle: "Виявлені ознаки",
+    noAnalysisYet: "Результат аналізу поки що недоступний.",
+    noRiskSignals: "Підозрілих ознак не виявлено.",
+    riskLevelPending: "аналіз ще не виконано",
+    valueUnavailable: "—",
+    riskLevels: {
+      high: "високий",
+      medium: "середній",
+      low: "низький",
+      not_analyzed: "не аналізувався",
+    },
+    pageTypes: {
+      not_product_page: "не товарна сторінка",
+      normal_shop_page: "звичайний інтернет-магазин",
+      // quick_order_landing: "landing page зі швидким замовленням",
+      unknown_product_page: "невизначена товарна сторінка",
+    },
+  },
+
+  backgroundUi: {
+    titles: {
+      highRisk: "Shopping Guard: Виявлено високий ризик!",
+      mediumRisk: "Shopping Guard: Можливий ризик.",
+      lowRisk: "Shopping Guard: Низький рівень ризику.",
+      notAnalyzed: "Shopping Guard: Сторінка не підлягає аналізу.",
+      default: "Shopping Guard",
+    },
+    badges: {
+      highRisk: {
+        text: "X",
+        color: "#d93025",
+      },
+      mediumRisk: {
+        text: "!",
+        color: "#f9ab00",
+      },
+      lowRisk: {
+        text: "\u2713",
+        color: "#22c55e",
+      },
+      notAnalyzed: {
+        text: "\u2014",
+        color: "#f0f0f0",
+      },
+    },
+    icons: {
+      danger: {
+        16: "icons/red16.png",
+        48: "icons/red48.png",
+      },
+      warning: {
+        16: "icons/amber16.png",
+        48: "icons/amber48.png",
+      },
+      safe: {
+        16: "icons/green16.png",
+        48: "icons/green48.png",
+      },
+      neutral: {
+        16: "icons/grey16.png",
+        48: "icons/grey48.png",
+      },
+    },
+  },
 };
