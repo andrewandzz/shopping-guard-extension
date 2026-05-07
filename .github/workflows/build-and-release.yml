@@ -1,0 +1,39 @@
+name: Build and release extension
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-extension:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate manifest.json
+        run: test -f manifest.json
+
+      - name: Prepare dist folder
+        run: |
+          rm -rf dist
+          mkdir dist
+          cp manifest.json dist/
+          cp popup.html dist/
+          cp popup.js dist/
+          cp content.js dist/
+          cp -r images dist/
+
+      - name: Create ZIP archive
+        run: |
+          cd dist
+          zip -r ../shopping-guard-extension.zip .
+
+      - name: Upload ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shopping-guard-extension
+          path: shopping-guard-extension.zip
