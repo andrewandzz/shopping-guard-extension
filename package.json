@@ -1,5 +1,10 @@
 {
-  "devDependencies": {
-    "@types/chrome": "^0.1.40"
+  "name": "shopping-guard-extension",
+  "version": "1.0.0",
+  "author": "Andrii Dashkov",
+  "scripts": {
+    "build:ui": "npm --prefix ui run build",
+    "build:app": "npm --prefix app run build",
+    "build": "npm run build:ui && npm run build:app"
   }
 }

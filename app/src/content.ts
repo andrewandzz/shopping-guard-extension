@@ -1,8 +1,11 @@
-/// <reference types="chrome" />
+import { FormData } from "./models/form-data.model";
+import { PageData } from "./models/page-data.model";
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+type HTMLField = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+
+chrome.runtime.onMessage.addListener((message, _, sendResponse) => {
   if (message.action === "GET_PAGE_DATA") {
-    const pageData = {
+    const pageData: PageData = {
       text: document.body.innerText || "",
       formsData: getFormsData(),
       url: window.location.href,
@@ -12,19 +15,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-function getFormsData() {
+function getFormsData(): FormData[] {
   const forms = Array.from(document.querySelectorAll("form"));
 
   const formsData = forms.map((form) => {
     return {
       text: form.innerText || "",
-      ids: Array.from(form.querySelectorAll("input, textarea, select"))
+      ids: Array.from(form.querySelectorAll<HTMLField>("input, textarea, select"))
         .map((field) => field.id)
         .filter((id) => id !== ""),
-      names: Array.from(form.querySelectorAll("input, textarea, select"))
+      names: Array.from(form.querySelectorAll<HTMLField>("input, textarea, select"))
         .map((field) => field.name)
         .filter((name) => name !== ""),
-      labels: Array.from(form.querySelectorAll("input, textarea, select"))
+      labels: Array.from(form.querySelectorAll<HTMLField>("input, textarea, select"))
         .map(getFieldLabel)
         .filter((label) => label !== ""),
       buttons: Array.from(form.querySelectorAll("button"))
@@ -36,15 +39,17 @@ function getFormsData() {
   return formsData;
 }
 
-function getFieldLabel(field) {
+function getFieldLabel(field: HTMLField): string {
   if (field.id) {
-    const label = document.querySelector(`label[for="${field.id}"]`);
+    const label: HTMLLabelElement | null = document.querySelector(`label[for="${field.id}"]`);
+
     if (label) {
       return label.innerText.trim();
     }
   }
 
   const parentLabel = field.closest("label");
+
   if (parentLabel) {
     return parentLabel.innerText.trim();
   }

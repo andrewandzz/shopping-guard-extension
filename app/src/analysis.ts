@@ -1,4 +1,12 @@
-function checkReturnPolicy(text) {
+import { CONFIG } from "./config";
+import { AnalysisResult } from "./models/analysis-result.model";
+import { FormData } from "./models/form-data.model";
+import { PageData } from "./models/page-data.model";
+import { PageType } from "./models/page-type.model";
+import { RiskLevel } from "./models/risk-level.model";
+import { RiskSignal } from "./models/risk-signal.model";
+
+function checkReturnPolicy(text: string): RiskSignal | null {
   const textLower = text.toLowerCase();
 
   const hasReturnInfo = CONFIG.keywords.return.some((keyword) =>
@@ -15,7 +23,7 @@ function checkReturnPolicy(text) {
   return null;
 }
 
-function checkWarranty(text) {
+function checkWarranty(text: string): RiskSignal | null {
   const textLower = text.toLowerCase();
 
   const hasWarrantyInfo = CONFIG.keywords.warranty.some((keyword) =>
@@ -32,7 +40,7 @@ function checkWarranty(text) {
   return null;
 }
 
-function checkContacts(text) {
+function checkContacts(text: string): RiskSignal | null {
   const textLower = text.toLowerCase();
 
   const hasContacts = CONFIG.keywords.contact.some((keyword) =>
@@ -49,7 +57,7 @@ function checkContacts(text) {
   return null;
 }
 
-function checkAggressiveMarketing(text) {
+function checkAggressiveMarketing(text: string): RiskSignal | null {
   const textLower = text.toLowerCase();
 
   const hasAggressiveMarketing = CONFIG.keywords.aggressiveMarketing.some(
@@ -66,15 +74,15 @@ function checkAggressiveMarketing(text) {
   return null;
 }
 
-function checkReviews(text) {
+function checkReviews(text: string): RiskSignal | null {
   return null;
 }
 
-function checkPrice(text) {
+function checkPrice(text: string): RiskSignal | null {
   return null;
 }
 
-function checkLegalInfo(text) {
+function checkLegalInfo(text: string): RiskSignal | null {
   const textLower = text.toLowerCase();
 
   const hasLegalInfo = CONFIG.keywords.legal.some((word) =>
@@ -94,7 +102,7 @@ function checkLegalInfo(text) {
 /**
  * Checks whether the page forms require not only name and phone data but also delivery info.
  */
-function checkFormsRequireDeliveryInfo(formsData) {
+function checkFormsRequireDeliveryInfo(formsData: FormData[]): RiskSignal | null {
   const formsContent = formsData
     .map((formData) => Object.values(formData).flat().join(" ").toLowerCase())
     .join("\n---\n");
@@ -146,7 +154,7 @@ function checkFormsRequireDeliveryInfo(formsData) {
 //   return null;
 // }
 
-function checkDomain(url) {
+function checkDomain(url: string): RiskSignal | null {
   let hostname;
 
   try {
@@ -183,7 +191,7 @@ function checkDomain(url) {
   return null;
 }
 
-function detectPageType(text, url) {
+function detectPageType(text: string, url: string): PageType {
   const textLower = text.toLowerCase();
   const urlLower = url.toLowerCase();
 
@@ -210,46 +218,46 @@ function detectPageType(text, url) {
   // });
 
   if (!hasProductIntent) {
-    return "not_product_page"; // TODO: make type
+    return PageType.NOT_PRODUCT_PAGE;
   }
 
   if (hasNormalShopStructure && /*!hasQuickOrderForm &&*/ !isCheckoutPage) {
-    return "normal_shop_page"; // TODO: make type
+    return PageType.NORMAL_SHOP_PAGE;
   }
 
   // if (hasQuickOrderForm) {
   //   return "quick_order_landing";
   // }
 
-  return "unknown_product_page"; // TODO: make type
+  return PageType.UNKNOWN_PRODUCT_PAGE;
 }
 
-function analyzePageData(pageData) {
+export function analyzePageData(pageData: PageData): AnalysisResult {
   const pageType = detectPageType(pageData.text, pageData.url);
 
-  if (pageType === "not_product_page") {
+  if (pageType === PageType.NOT_PRODUCT_PAGE) {
     return {
-      riskLevel: "not_analyzed",
+      riskLevel: RiskLevel.NOT_ANALYZED,
       totalScore: 0,
-      signals: [],
+      riskSignals: [],
       pageType,
       message: CONFIG.messages.notProductPage,
       analyzedAt: new Date().toISOString(),
     };
   }
 
-  if (pageType === "normal_shop_page") {
+  if (pageType === PageType.NORMAL_SHOP_PAGE) {
     return {
-      riskLevel: "low",
+      riskLevel: RiskLevel.LOW,
       totalScore: 0,
-      signals: [],
+      riskSignals: [],
       pageType,
       message: CONFIG.messages.normalShopPage,
       analyzedAt: new Date().toISOString(),
     };
   }
 
-  const checks = [
+  const checks: (() => RiskSignal | null)[] = [
     () => checkReturnPolicy(pageData.text),
     () => checkWarranty(pageData.text),
     () => checkContacts(pageData.text),
@@ -262,26 +270,25 @@ function analyzePageData(pageData) {
     // TODO: check cart
   ];
 
-  const signals = checks
+  const riskSignals = checks
     .map((check) => check())
     .filter((result) => result !== null);
 
-  const totalScore = signals.reduce((sum, signal) => sum + signal.score, 0);
+  const totalScore = riskSignals.reduce((sum, signal) => sum + signal.score, 0);
 
-  let riskLevel = "low"; // TODO: make type
+  let riskLevel = RiskLevel.LOW;
 
   if (totalScore >= CONFIG.riskThresholds.high) {
-    riskLevel = "high";
+    riskLevel = RiskLevel.HIGH;
   } else if (totalScore >= CONFIG.riskThresholds.medium) {
-    riskLevel = "medium";
+    riskLevel = RiskLevel.MEDIUM;
   }
 
   return {
     riskLevel,
     totalScore,
-    signals,
+    riskSignals,
     pageType,
-    message: null,
     analyzedAt: new Date().toISOString(),
   };
 }

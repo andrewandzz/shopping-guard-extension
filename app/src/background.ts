@@ -1,4 +1,6 @@
-importScripts("analysis.js", "config.js");
+import { analyzePageData } from "./analysis";
+import { CONFIG } from "./config";
+import { AnalysisResult } from "./models/analysis-result.model";
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") return;
@@ -52,7 +54,7 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   chrome.storage.local.remove(`analysis_${tabId}`);
 });
 
-function updateExtensionStatus(tabId, result) {
+function updateExtensionStatus(tabId: number, result: AnalysisResult) {
   switch (result.riskLevel) {
     case "high":
       setDangerIcon(tabId);
@@ -69,7 +71,7 @@ function updateExtensionStatus(tabId, result) {
   }
 }
 
-function setDangerIcon(tabId) {
+function setDangerIcon(tabId: number) {
   chrome.action.setBadgeText({
     tabId,
     text: CONFIG.backgroundUi.badges.highRisk.text,
@@ -88,7 +90,7 @@ function setDangerIcon(tabId) {
   });
 }
 
-function setWarningIcon(tabId) {
+function setWarningIcon(tabId: number) {
   chrome.action.setBadgeText({
     tabId,
     text: CONFIG.backgroundUi.badges.mediumRisk.text,
@@ -107,7 +109,7 @@ function setWarningIcon(tabId) {
   });
 }
 
-function setSafeIcon(tabId) {
+function setSafeIcon(tabId: number) {
   chrome.action.setBadgeText({
     tabId,
     text: CONFIG.backgroundUi.badges.lowRisk.text,
@@ -126,7 +128,7 @@ function setSafeIcon(tabId) {
   });
 }
 
-function setNeutralIcon(tabId) {
+function setNeutralIcon(tabId: number) {
   chrome.action.setBadgeText({
     tabId,
     text: CONFIG.backgroundUi.badges.notAnalyzed.text,

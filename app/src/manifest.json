@@ -13,11 +13,12 @@
     "<all_urls>"
   ],
   "background": {
-    "service_worker": "background.js"
-  },
+    "service_worker": "background.js",
+    "type": "module"
+  },  
   "action": {
     "default_title": "Shopping Guard",
-    "default_popup": "popup.html",
+    "default_popup": "index.html",
     "default_icon": {
       "16": "icons/default16.png",
       "48": "icons/default48.png",

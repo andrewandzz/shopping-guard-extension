@@ -1,0 +1,15 @@
+<div *ngIf="!analysis">
+  No analysis yet
+</div>
+
+<div class="container" *ngIf="analysis">
+  <!-- <h1 id="popup-title"></h1> -->
+
+  <p id="page-type" class="page-type">{{ analysis.pageType }}</p>
+  <p id="risk-level" class="risk-level">{{ analysis.riskLevel }}</p>
+  <p id="risk-score" class="risk-score">{{ analysis.totalScore }}</p>
+  <p id="message" class="message" *ngIf="analysis.message">{{ analysis.message }}</p>
+
+  <!-- <h2 id="signals-title"></h2> -->
+  <!-- <ul id="risk-signals" class="signals-list"></ul> -->
+</div>

@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "build": "npm run build:background && npm run build:content && npm run copy:manifest && npm run copy:icons",
+    "build:background": "esbuild src/background.ts --bundle --outfile=../dist/background.js --platform=browser --format=iife",
+    "build:content": "esbuild src/content.ts --bundle --outfile=../dist/content.js --platform=browser --format=iife",
+    "copy:manifest": "copyfiles -u 1 src/manifest.json ../dist",
+    "copy:icons": "copyfiles icons/* ../dist"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.42",
+    "copyfiles": "^2.4.1",
+    "esbuild": "^0.28.0"
+  }
+}
