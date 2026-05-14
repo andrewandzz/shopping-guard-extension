@@ -1,15 +1,207 @@
-<div *ngIf="!analysis">
-  No analysis yet
-</div>
+<div class="popup" [ngClass]="'theme-' + riskUi.theme">
+  <header class="popup-header">
+    <div class="brand">
+      <img class="logo" [src]="logoSrc" alt="Shopping Guard" />
 
-<div class="container" *ngIf="analysis">
-  <!-- <h1 id="popup-title"></h1> -->
+      <h1>Shopping Guard</h1>
+    </div>
 
-  <p id="page-type" class="page-type">{{ analysis.pageType }}</p>
-  <p id="risk-level" class="risk-level">{{ analysis.riskLevel }}</p>
-  <p id="risk-score" class="risk-score">{{ analysis.totalScore }}</p>
-  <p id="message" class="message" *ngIf="analysis.message">{{ analysis.message }}</p>
+    <button type="button" class="menu-button" aria-label="Відкрити меню" (click)="toggleMenu()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
-  <!-- <h2 id="signals-title"></h2> -->
-  <!-- <ul id="risk-signals" class="signals-list"></ul> -->
+    <div class="menu" *ngIf="isMenuOpen">
+      <button type="button" class="menu-item" (click)="rerunAnalysis()">
+        <span class="menu-icon">↻</span>
+        <span>Повторити аналіз</span>
+      </button>
+
+      <div class="menu-divider"></div>
+
+      <button type="button" class="menu-item menu-item-with-switch" (click)="toggleShowDetailsAutomatically()">
+        <span class="menu-icon">◉</span>
+        <span>Показувати деталі автоматично</span>
+
+        <span class="switch" [class.switch-active]="settings.showDetailsAutomatically">
+          <span></span>
+        </span>
+      </button>
+
+      <button type="button" class="menu-item" (click)="markSiteAsSafe()">
+        <span class="menu-icon">▿</span>
+        <span>Позначити сайт як безпечний</span>
+      </button>
+
+      <button type="button" class="menu-item" (click)="ignoreSite()">
+        <span class="menu-icon">⊗</span>
+        <span>Не аналізувати цей сайт</span>
+      </button>
+
+      <div class="menu-divider"></div>
+
+      <button type="button" class="menu-item" (click)="reportFalsePositive()">
+        <span class="menu-icon">♢</span>
+        <span>Повідомити про помилкове спрацювання</span>
+      </button>
+
+      <div class="menu-divider"></div>
+
+      <button type="button" class="menu-item" (click)="openAbout()">
+        <span class="menu-icon">ⓘ</span>
+        <span>Про розширення</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="content" *ngIf="!isLoading; else loadingTemplate">
+    <section class="summary-card">
+      <div class="risk-icon">
+        <span *ngIf="riskUi.icon === 'warning'">!</span>
+        <span *ngIf="riskUi.icon === 'check'">✓</span>
+        <span *ngIf="riskUi.icon === 'unknown'">?</span>
+      </div>
+
+      <div class="summary-text">
+        <h2>{{ riskUi.title }}</h2>
+        <p>{{ riskUi.message }}</p>
+      </div>
+    </section>
+
+    <section class="info-card">
+      <div class="signals-block">
+        <h3>Що насторожує</h3>
+
+        <ul *ngIf="shouldShowSignals; else noSignalsTemplate">
+          <li *ngFor="let signal of riskSignals">
+            {{ signal }}
+          </li>
+        </ul>
+
+        <ng-template #noSignalsTemplate>
+          <p class="empty-signals">Підозрілих ознак не виявлено.</p>
+        </ng-template>
+      </div>
+
+      <div class="meta-block">
+        <div class="meta-item">
+          <div class="meta-icon">▤</div>
+
+          <div>
+            <strong>Тип сторінки:</strong>
+            <span>{{ pageTypeLabel }}</span>
+          </div>
+        </div>
+
+        <div class="meta-item">
+          <div class="meta-icon">♢</div>
+
+          <div>
+            <strong>Бали ризику:</strong>
+            <span class="risk-score">{{ riskScoreLabel }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="details">
+      <button type="button" class="details-toggle" (click)="toggleDetails()">
+        <span>Детальніше</span>
+        <span class="chevron" [class.chevron-open]="isDetailsOpen">⌄</span>
+      </button>
+
+      <div class="details-content" *ngIf="isDetailsOpen">
+        <div class="details-panel">
+          <div class="detail-row">
+            <div class="detail-icon">◎</div>
+
+            <div class="detail-main">
+              <div class="detail-title">Домен</div>
+              <div class="detail-description">
+                {{ analysis?.detailsMessage || 'Додаткова інформація про домен відсутня.' }}
+              </div>
+            </div>
+
+            <div class="detail-value">
+              {{ analysis?.domain || currentUrlPattern }}
+            </div>
+          </div>
+
+          <div class="detail-divider"></div>
+
+          <div class="detail-row">
+            <div class="detail-icon">▤</div>
+
+            <div class="detail-main">
+              <div class="detail-title">Тип сторінки</div>
+              <div class="detail-description">
+                {{ analysis?.pageTypeDescription || defaultPageTypeDescription }}
+              </div>
+            </div>
+
+            <div class="detail-value">
+              {{ pageTypeLabel }}
+            </div>
+          </div>
+
+          <div class="detail-divider"></div>
+
+          <div class="detail-row">
+            <div class="detail-icon">♢</div>
+
+            <div class="detail-main">
+              <div class="detail-title">Бали ризику</div>
+              <div class="detail-description">
+                {{ riskScoreDescription }}
+              </div>
+            </div>
+
+            <div class="detail-value detail-score">
+              {{ riskScoreLabel }}
+            </div>
+          </div>
+
+          <div class="detail-divider"></div>
+
+          <div class="checks-block">
+            <div class="checks-title">
+              <span class="detail-icon">▤</span>
+              <span>Деталі перевірок</span>
+            </div>
+
+            <div class="check-list" *ngIf="analysis?.checks?.length; else emptyChecksTemplate">
+              <div class="check-item" *ngFor="let check of analysis?.checks"
+                [class.check-negative]="check.status === 'negative'"
+                [class.check-positive]="check.status === 'positive'">
+                <span class="check-label">{{ check.label }}</span>
+                <span class="check-value">{{ check.value }}</span>
+              </div>
+            </div>
+
+            <ng-template #emptyChecksTemplate>
+              <div class="check-empty">
+                Детальні перевірки відсутні.
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <ng-template #loadingTemplate>
+    <main class="content">
+      <section class="summary-card">
+        <div class="risk-icon">
+          <span>…</span>
+        </div>
+
+        <div class="summary-text">
+          <h2>Завантаження</h2>
+          <p>Отримуємо результат аналізу сторінки.</p>
+        </div>
+      </section>
+    </main>
+  </ng-template>
 </div>

@@ -1,5 +1,6 @@
 import { CONFIG } from "./config";
 import { AnalysisResult } from "./models/analysis-result.model";
+import { AnalysisStatus } from "./models/analysis-status.model";
 import { FormData } from "./models/form-data.model";
 import { PageData } from "./models/page-data.model";
 import { PageType } from "./models/page-type.model";
@@ -237,7 +238,7 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
 
   if (pageType === PageType.NOT_PRODUCT_PAGE) {
     return {
-      riskLevel: RiskLevel.NOT_ANALYZED,
+      status: AnalysisStatus.NOT_APPLICABLE,
       totalScore: 0,
       riskSignals: [],
       pageType,
@@ -248,6 +249,7 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
 
   if (pageType === PageType.NORMAL_SHOP_PAGE) {
     return {
+      status: AnalysisStatus.ANALYZED,
       riskLevel: RiskLevel.LOW,
       totalScore: 0,
       riskSignals: [],
@@ -285,10 +287,39 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
   }
 
   return {
+    status: AnalysisStatus.ANALYZED,
     riskLevel,
     totalScore,
     riskSignals,
     pageType,
     analyzedAt: new Date().toISOString(),
+    url: pageData.url,
+    domain: pageData.url, // TODO: fix
+    detailsMessage: 'Немає відгуків або згадок у мережі.', // TODO: fix
+    pageTypeDescription: 'Односторінковий сайт без додаткових розділів.', // TODO: fix
+    checks: [ // TODO: fix
+      {
+        label: 'Повернення',
+        value: 'не знайдено',
+        status: 'negative',
+      },
+      {
+        label: 'Гарантія',
+        value: 'не знайдено',
+        status: 'negative',
+      },
+      {
+        label: 'Юридичні дані',
+        value: 'відсутні',
+        status: 'negative',
+      },
+      {
+        label: 'Форма замовлення',
+        value: 'лише ім\'я та телефон',
+        status: 'negative',
+      },
+    ],
   };
+
+  // TODO: add ERROR status for errors
 }

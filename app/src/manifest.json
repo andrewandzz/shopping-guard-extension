@@ -15,7 +15,7 @@
   "background": {
     "service_worker": "background.js",
     "type": "module"
-  },  
+  },
   "action": {
     "default_title": "Shopping Guard",
     "default_popup": "index.html",
@@ -29,5 +29,15 @@
     "16": "icons/default16.png",
     "48": "icons/default48.png",
     "128": "icons/default128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "fonts/*.ttf"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
 }
