@@ -2,7 +2,6 @@
   display: block;
   width: 580px;
   min-height: 456px;
-  font-family: "Poppins", "Times New Roman", sans-serif;
   color: #111827;
 }
 
@@ -116,9 +115,9 @@ button {
 
 .summary-text h2 {
   margin: 0 0 8px;
-  font-size: 29px;
+  font-size: 28px;
   line-height: 1.15;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: -0.03em;
 }
 

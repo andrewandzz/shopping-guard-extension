@@ -1,109 +1,109 @@
 import { CONFIG } from "./config";
+import { AnalysisCheck } from "./models/analysis-check.model";
 import { AnalysisResult } from "./models/analysis-result.model";
 import { AnalysisStatus } from "./models/analysis-status.model";
 import { FormData } from "./models/form-data.model";
 import { PageData } from "./models/page-data.model";
 import { PageType } from "./models/page-type.model";
 import { RiskLevel } from "./models/risk-level.model";
-import { RiskSignal } from "./models/risk-signal.model";
 
-function checkReturnPolicy(text: string): RiskSignal | null {
+/**
+ * 
+ */
+function checkReturnPolicy(text: string): AnalysisCheck {
   const textLower = text.toLowerCase();
 
   const hasReturnInfo = CONFIG.keywords.return.some((keyword) =>
     textLower.includes(keyword),
   );
 
-  if (!hasReturnInfo) {
-    return {
-      score: CONFIG.riskScores.noReturnPolicy,
-      message: CONFIG.messages.noReturnPolicy,
-    };
+  return {
+    id: 'return_policy',
+    status: hasReturnInfo ? 'passed' : 'failed',
+    riskScore: CONFIG.checks.returnPolicy.riskScore
   }
-
-  return null;
 }
 
-function checkWarranty(text: string): RiskSignal | null {
+/**
+ * 
+ */
+function checkWarranty(text: string): AnalysisCheck {
   const textLower = text.toLowerCase();
 
   const hasWarrantyInfo = CONFIG.keywords.warranty.some((keyword) =>
     textLower.includes(keyword),
   );
 
-  if (!hasWarrantyInfo) {
-    return {
-      score: CONFIG.riskScores.noWarranty,
-      message: CONFIG.messages.noWarranty,
-    };
-  }
-
-  return null;
+  return {
+    id: 'warranty',
+    status: hasWarrantyInfo ? 'passed' : 'failed',
+    riskScore: CONFIG.checks.warranty.riskScore
+  };
 }
 
-function checkContacts(text: string): RiskSignal | null {
+/**
+ * 
+ */
+function checkContacts(text: string): AnalysisCheck {
   const textLower = text.toLowerCase();
 
   const hasContacts = CONFIG.keywords.contact.some((keyword) =>
     textLower.includes(keyword),
   );
 
-  if (!hasContacts) {
-    return {
-      score: CONFIG.riskScores.noContacts,
-      message: CONFIG.messages.noContacts,
-    };
+  return {
+    id: 'contacts',
+    status: hasContacts ? 'passed' : 'failed',
+    riskScore: CONFIG.checks.contacts.riskScore
   }
-
-  return null;
 }
 
-function checkAggressiveMarketing(text: string): RiskSignal | null {
+/**
+ * 
+ */
+function checkAggressiveMarketing(text: string): AnalysisCheck {
   const textLower = text.toLowerCase();
 
   const hasAggressiveMarketing = CONFIG.keywords.aggressiveMarketing.some(
     (keyword) => textLower.includes(keyword),
   );
 
-  if (hasAggressiveMarketing) {
-    return {
-      score: CONFIG.riskScores.aggressiveMarketing,
-      message: CONFIG.messages.aggressiveMarketing,
-    };
+  return {
+    id: 'aggressive_marketing',
+    status: !hasAggressiveMarketing ? 'passed' : 'failed',
+    riskScore: CONFIG.checks.aggressiveMarketing.riskScore
   }
-
-  return null;
 }
 
-function checkReviews(text: string): RiskSignal | null {
-  return null;
+function checkReviews(text: string): AnalysisCheck {
+  throw new Error('Not implemented');
 }
 
-function checkPrice(text: string): RiskSignal | null {
-  return null;
+function checkPrice(text: string): AnalysisCheck {
+  throw new Error('Not implemented');
 }
 
-function checkLegalInfo(text: string): RiskSignal | null {
+/**
+ * 
+ */
+function checkLegalInfo(text: string): AnalysisCheck {
   const textLower = text.toLowerCase();
 
   const hasLegalInfo = CONFIG.keywords.legal.some((word) =>
     textLower.includes(word),
   );
 
-  if (!hasLegalInfo) {
-    return {
-      score: CONFIG.riskScores.noLegalInfo,
-      message: CONFIG.messages.noLegalInfo,
-    };
+  return {
+    id: 'legal_info',
+    status: hasLegalInfo ? 'passed' : 'failed',
+    riskScore: CONFIG.checks.legalInfo.riskScore
   }
-
-  return null;
 }
 
 /**
  * Checks whether the page forms require not only name and phone data but also delivery info.
  */
-function checkFormsRequireDeliveryInfo(formsData: FormData[]): RiskSignal | null {
+function checkFormsRequireDeliveryInfo(formsData: FormData[]): AnalysisCheck {
   const formsContent = formsData
     .map((formData) => Object.values(formData).flat().join(" ").toLowerCase())
     .join("\n---\n");
@@ -118,14 +118,11 @@ function checkFormsRequireDeliveryInfo(formsData: FormData[]): RiskSignal | null
     formsContent.includes(keyword),
   );
 
-  if (hasNameField && hasPhoneField && !hasDeliveryField) {
-    return {
-      score: CONFIG.riskScores.nameAndPhoneOnlyForm,
-      message: CONFIG.messages.nameAndPhoneOnlyForm,
-    };
+  return {
+    id: 'name_and_phone_only_form',
+    status: hasNameField && hasPhoneField && hasDeliveryField ? 'passed' : 'failed',
+    riskScore: CONFIG.checks.nameAndPhoneOnlyForm.riskScore
   }
-
-  return null;
 }
 
 // function checkOnePageStructure(text) {
@@ -155,14 +152,8 @@ function checkFormsRequireDeliveryInfo(formsData: FormData[]): RiskSignal | null
 //   return null;
 // }
 
-function checkDomain(url: string): RiskSignal | null {
-  let hostname;
-
-  try {
-    hostname = new URL(url).hostname.toLowerCase();
-  } catch {
-    return null;
-  }
+function checkDomain(url: string): AnalysisCheck {
+  const hostname = new URL(url).hostname.toLowerCase();
 
   const hasTrustedZone = CONFIG.domainZones.trusted.some((zone) =>
     hostname.endsWith(zone),
@@ -172,24 +163,11 @@ function checkDomain(url: string): RiskSignal | null {
     hostname.endsWith(zone),
   );
 
-  let score = 0;
-
-  if (!hasTrustedZone) {
-    score += CONFIG.riskScores.nonTrustedDomainZone;
+  return {
+    id: 'domain_zone',
+    status: hasTrustedZone && !hasSuspiciousZone ? 'passed' : 'failed',
+    riskScore: CONFIG.checks.domainZone.riskScore
   }
-
-  if (hasSuspiciousZone) {
-    score += CONFIG.riskScores.suspiciousDomainZone;
-  }
-
-  if (score > 0) {
-    return {
-      score,
-      message: CONFIG.messages.suspiciousDomainZone,
-    };
-  }
-
-  return null;
 }
 
 function detectPageType(text: string, url: string): PageType {
@@ -239,44 +217,42 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
   if (pageType === PageType.NOT_PRODUCT_PAGE) {
     return {
       status: AnalysisStatus.NOT_APPLICABLE,
-      totalScore: 0,
-      riskSignals: [],
       pageType,
-      message: CONFIG.messages.notProductPage,
-      analyzedAt: new Date().toISOString(),
+      url: pageData.url,
+      domain: new URL(pageData.url).hostname,
+      checks: [],
     };
   }
 
   if (pageType === PageType.NORMAL_SHOP_PAGE) {
     return {
       status: AnalysisStatus.ANALYZED,
-      riskLevel: RiskLevel.LOW,
-      totalScore: 0,
-      riskSignals: [],
       pageType,
-      message: CONFIG.messages.normalShopPage,
+      url: pageData.url,
+      domain: new URL(pageData.url).hostname,
+      riskLevel: RiskLevel.LOW,
+      totalScore: 1, // TODO: fix?
+      checks: [],
       analyzedAt: new Date().toISOString(),
     };
   }
 
-  const checks: (() => RiskSignal | null)[] = [
-    () => checkReturnPolicy(pageData.text),
-    () => checkWarranty(pageData.text),
-    () => checkContacts(pageData.text),
-    () => checkAggressiveMarketing(pageData.text),
-    () => checkLegalInfo(pageData.text),
-    () => checkReviews(pageData.text),
-    () => checkPrice(pageData.text),
-    () => checkFormsRequireDeliveryInfo(pageData.formsData),
-    () => checkDomain(pageData.url),
+  const checks: AnalysisCheck[] = [
+    checkReturnPolicy(pageData.text),
+    checkWarranty(pageData.text),
+    checkContacts(pageData.text),
+    checkAggressiveMarketing(pageData.text),
+    checkLegalInfo(pageData.text),
+    // checkReviews(pageData.text),
+    // checkPrice(pageData.text),
+    checkFormsRequireDeliveryInfo(pageData.formsData),
+    checkDomain(pageData.url),
     // TODO: check cart
   ];
 
-  const riskSignals = checks
-    .map((check) => check())
-    .filter((result) => result !== null);
+  const riskSignals = checks.filter((result) => result.status === 'failed');
 
-  const totalScore = riskSignals.reduce((sum, signal) => sum + signal.score, 0);
+  const totalScore = riskSignals.reduce((sum, signal) => sum + signal.riskScore!, 0);
 
   let riskLevel = RiskLevel.LOW;
 
@@ -290,35 +266,11 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
     status: AnalysisStatus.ANALYZED,
     riskLevel,
     totalScore,
-    riskSignals,
     pageType,
     analyzedAt: new Date().toISOString(),
     url: pageData.url,
-    domain: pageData.url, // TODO: fix
-    detailsMessage: 'Немає відгуків або згадок у мережі.', // TODO: fix
-    pageTypeDescription: 'Односторінковий сайт без додаткових розділів.', // TODO: fix
-    checks: [ // TODO: fix
-      {
-        label: 'Повернення',
-        value: 'не знайдено',
-        status: 'negative',
-      },
-      {
-        label: 'Гарантія',
-        value: 'не знайдено',
-        status: 'negative',
-      },
-      {
-        label: 'Юридичні дані',
-        value: 'відсутні',
-        status: 'negative',
-      },
-      {
-        label: 'Форма замовлення',
-        value: 'лише ім\'я та телефон',
-        status: 'negative',
-      },
-    ],
+    domain: new URL(pageData.url).hostname,
+    checks: checks,
   };
 
   // TODO: add ERROR status for errors

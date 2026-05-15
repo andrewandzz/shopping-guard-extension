@@ -9,22 +9,23 @@ import {
 import { AnalysisResult } from './models/analysis-result.model';
 import { AnalysisStatus } from './models/analysis-status.model';
 import { Settings } from './models/settings.model';
-import { PageType } from './models/page-type.model';
-import { RiskLevel } from './models/risk-level.model';
+// import { PageType } from './models/page-type.model';
+// import { RiskLevel } from './models/risk-level.model';
 
 import { AnalysisResultStorageService } from './services/analysis-result-storage.service';
 import { SettingsService } from './services/settings.service';
 import { SiteRulesService } from './services/site-rules.service';
 import { DomSanitizer } from '@angular/platform-browser';
+import { CHECK_CONFIG, PAGE_TYPE_CONFIG, RISK_LEVEL_CONFIG } from './config/config';
 
-type RiskTheme = 'high' | 'medium' | 'low' | 'neutral';
+// type RiskTheme = 'high' | 'medium' | 'low' | 'neutral';
 
-interface RiskUiConfig {
-  title: string;
-  message: string;
-  theme: RiskTheme;
-  icon: 'warning' | 'check' | 'unknown';
-}
+// interface RiskUiConfig {
+//   title: string;
+//   message: string;
+//   theme: RiskTheme;
+//   icon: 'warning' | 'check' | 'unknown';
+// }
 
 @Component({
   selector: 'app-root',
@@ -68,6 +69,9 @@ export class App implements OnInit, OnDestroy {
     const analysisKey = `analysis_${tab.id}`;
 
     this.analysis = await this.analysisStorage.getAnalysisResult(analysisKey);
+
+    console.log(this.analysis);
+
     this.isLoading = false;
 
     // this.stopWatchingAnalysis = this.analysisStorage.watchAnalysis((analysis) => {
@@ -83,149 +87,143 @@ export class App implements OnInit, OnDestroy {
   }
 
   get logoSrc(): string {
-    switch (this.riskUi.theme) {
-      case 'high':
-        this.sanitizer.bypassSecurityTrustResourceUrl('icons/icon-red.svg');
-        return 'icons/icon-red.svg';
+    let src: string;
 
-      case 'medium':
-        this.sanitizer.bypassSecurityTrustResourceUrl('icons/icon-amber.svg');
-        return 'icons/icon-amber.svg';
-
-      case 'low':
-        this.sanitizer.bypassSecurityTrustResourceUrl('icons/icon-green.svg');
-        return 'icons/icon-green.svg';
-
-      case 'neutral':
-      default:
-        this.sanitizer.bypassSecurityTrustResourceUrl('icons/icon-grey.svg');
-        return 'icons/icon-grey.svg';
+    if (this.analysis?.status === AnalysisStatus.ANALYZED) {
+      src = RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].icon;
+    } else {
+      src = 'icons/icon-grey.svg'; // TODO: maybe revise
     }
+
+    this.sanitizer.bypassSecurityTrustResourceUrl(src);
+    return src;
   }
 
-  get riskUi(): RiskUiConfig {
-    if (!this.analysis) {
+  // get riskUi(): RiskUiConfig {
+  //   if (!this.analysis) {
+  //     return {
+  //       title: 'Не проаналізовано',
+  //       message: 'Ми ще не перевірили цей сайт. Даних недостатньо для оцінки.',
+  //       theme: 'neutral',
+  //       icon: 'unknown',
+  //     };
+  //   }
+
+  //   if (
+  //     this.analysis.status === AnalysisStatus.NOT_ANALYZED ||
+  //     this.analysis.status === AnalysisStatus.NOT_APPLICABLE
+  //   ) {
+  //     return {
+  //       title: 'Не проаналізовано',
+  //       message: 'Ми ще не перевірили цей сайт. Даних недостатньо для оцінки.',
+  //       theme: 'neutral',
+  //       icon: 'unknown',
+  //     };
+  //   }
+
+  //   if (this.analysis.status === AnalysisStatus.ERROR) {
+  //     return {
+  //       title: 'Помилка аналізу',
+  //       message:
+
+  //         'Не вдалося виконати перевірку сторінки.',
+  //       theme: 'neutral',
+  //       icon: 'unknown',
+  //     };
+  //   }
+
+  //   switch (this.analysis.riskLevel) {
+  //     case RiskLevel.HIGH:
+  //       return {
+  //         title: 'Високий ризик',
+  //         message:
+  //           'Виявлено кілька підозрілих ознак на цьому сайті.',
+  //         theme: 'high',
+  //         icon: 'warning',
+  //       };
+
+  //     case RiskLevel.MEDIUM:
+  //       return {
+  //         title: 'Середній ризик',
+  //         message:
+
+  //           'Виявлено деякі ознаки, що можуть свідчити про ризики.',
+  //         theme: 'medium',
+  //         icon: 'warning',
+  //       };
+
+  //     case RiskLevel.LOW:
+  //       return {
+  //         title: 'Низький ризик',
+  //         message:
+  //           'Сайт виглядає безпечно. Підозрілих ознак не виявлено.',
+  //         theme: 'low',
+  //         icon: 'check',
+  //       };
+
+  //     default:
+  //       return {
+  //         title: 'Не проаналізовано',
+  //         message: 'Даних недостатньо для оцінки.',
+  //         theme: 'neutral',
+  //         icon: 'unknown',
+  //       };
+  //   }
+  // }
+
+  get risk(): { label: string, description: string, theme: string, icon: string } {
+    if (this.analysis?.status !== AnalysisStatus.ANALYZED) {
       return {
-        title: 'Не проаналізовано',
-        message: 'Ми ще не перевірили цей сайт. Даних недостатньо для оцінки.',
+        label: 'Не проаналізовано',
+        description: 'Ми ще не перевірили цей сайт.',
         theme: 'neutral',
-        icon: 'unknown',
-      };
+        icon: 'icons/icon-grey.svg',
+      }
     }
 
-    if (
-      this.analysis.status === AnalysisStatus.NOT_ANALYZED ||
-      this.analysis.status === AnalysisStatus.NOT_APPLICABLE
-    ) {
-      return {
-        title: 'Не проаналізовано',
-        message:
-          this.analysis.message ??
-          'Ми ще не перевірили цей сайт. Даних недостатньо для оцінки.',
-        theme: 'neutral',
-        icon: 'unknown',
-      };
+    return {
+      label: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].label,
+      description: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].description,
+      theme: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].theme,
+      icon: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].icon
     }
-
-    if (this.analysis.status === AnalysisStatus.ERROR) {
-      return {
-        title: 'Помилка аналізу',
-        message:
-          this.analysis.message ??
-          'Не вдалося виконати перевірку сторінки.',
-        theme: 'neutral',
-        icon: 'unknown',
-      };
-    }
-
-    switch (this.analysis.riskLevel) {
-      case RiskLevel.HIGH:
-        return {
-          title: 'Високий ризик',
-          message:
-            this.analysis.message ??
-            'Виявлено кілька підозрілих ознак на цьому сайті.',
-          theme: 'high',
-          icon: 'warning',
-        };
-
-      case RiskLevel.MEDIUM:
-        return {
-          title: 'Середній ризик',
-          message:
-            this.analysis.message ??
-            'Виявлено деякі ознаки, що можуть свідчити про ризики.',
-          theme: 'medium',
-          icon: 'warning',
-        };
-
-      case RiskLevel.LOW:
-        return {
-          title: 'Низький ризик',
-          message:
-            this.analysis.message ??
-            'Сайт виглядає безпечно. Підозрілих ознак не виявлено.',
-          theme: 'low',
-          icon: 'check',
-        };
-
-      default:
-        return {
-          title: 'Не проаналізовано',
-          message: 'Даних недостатньо для оцінки.',
-          theme: 'neutral',
-          icon: 'unknown',
-        };
-    }
-  }
-
-  get riskSignals(): string[] {
-    return this.analysis?.riskSignals?.map((signal) => signal.message) ?? [];
   }
 
   get pageTypeLabel(): string {
-    switch (this.analysis?.pageType) {
-      case PageType.NOT_PRODUCT_PAGE:
-        return 'not product page';
-
-      case PageType.NORMAL_SHOP_PAGE:
-        return 'category page';
-
-      case PageType.UNKNOWN_PRODUCT_PAGE:
-        return 'landing page';
-
-      default:
-        return 'unknown page';
-    }
+    return PAGE_TYPE_CONFIG[this.analysis?.pageType!].label;
   }
 
-  get riskScoreLabel(): string {
-    if (
-      !this.analysis ||
-      this.analysis.totalScore === undefined ||
-      this.analysis.totalScore === null
-    ) {
+  get riskScore(): string {
+    if (!this.analysis || this.analysis.totalScore == null) {
       return '—';
     }
 
     return String(this.analysis.totalScore);
   }
 
-  get currentUrlPattern(): string {
-    if (!this.analysis?.url) {
-      return '*';
+  get riskScoreLabel(): string {
+    if (!this.analysis || this.analysis.riskLevel == null) {
+      return '';
     }
 
-    try {
-      const url = new URL(this.analysis.url);
-      return url.hostname;
-    } catch {
-      return this.analysis.url;
-    }
+    return RISK_LEVEL_CONFIG[this.analysis.riskLevel].label;
   }
 
+  // get currentUrlPattern(): string {
+  //   if (!this.analysis?.url) {
+  //     return '*';
+  //   }
+
+  //   try {
+  //     const url = new URL(this.analysis.url);
+  //     return url.hostname;
+  //   } catch {
+  //     return this.analysis.url;
+  //   }
+  // }
+
   get shouldShowSignals(): boolean {
-    return this.riskSignals.length > 0;
+    return this.failedChecks.length > 0;
   }
 
   // get detailsText(): string {
@@ -254,40 +252,25 @@ export class App implements OnInit, OnDestroy {
   //   return parts.join('\n\n') || 'Детальна інформація відсутня.';
   // }
 
-  get defaultPageTypeDescription(): string {
-    switch (this.analysis?.pageType) {
-      case PageType.NOT_PRODUCT_PAGE:
-        return 'Сторінка не містить достатніх ознак продажу товару.';
-
-      case PageType.NORMAL_SHOP_PAGE:
-        return 'Сторінка схожа на звичайний магазин або каталог товарів.';
-
-      case PageType.UNKNOWN_PRODUCT_PAGE:
-        return 'Односторінковий сайт без додаткових розділів.';
-
-      default:
-        return 'Тип сторінки не визначено.';
-    }
+  get pageTypeDescription(): string {
+    return PAGE_TYPE_CONFIG[this.analysis?.pageType!].description;
   }
 
-  get riskScoreDescription(): string {
-    if (!this.analysis || this.analysis.totalScore === undefined) {
-      return 'Оцінку ризику не сформовано.';
+  get checks(): { label: string, value: string, status: 'passed' | 'failed', message: string }[] {
+    if (!this.analysis || !this.analysis.checks) {
+      return [];
     }
 
-    switch (this.analysis.riskLevel) {
-      case RiskLevel.HIGH:
-        return 'Високий ризик (шкала 0–10)';
+    return this.analysis.checks.map(check => ({
+      label: CHECK_CONFIG[check.id].label,
+      value: CHECK_CONFIG[check.id].values[check.status],
+      status: check.status,
+      message: CHECK_CONFIG[check.id].message
+    }));
+  }
 
-      case RiskLevel.MEDIUM:
-        return 'Середній ризик (шкала 0–10)';
-
-      case RiskLevel.LOW:
-        return 'Низький ризик (шкала 0–10)';
-
-      default:
-        return 'Оцінка ризику за шкалою 0–10';
-    }
+  get failedChecks(): { label: string, value: string, status: 'passed' | 'failed', message: string }[] {
+    return this.checks.filter(check => check.status === 'failed');
   }
 
   toggleMenu(): void {
@@ -330,7 +313,7 @@ export class App implements OnInit, OnDestroy {
     this.closeMenu();
 
     await this.siteRulesService.addRule(
-      this.currentUrlPattern,
+      this.analysis?.domain!,
       'mark_as_safe',
     );
   }
@@ -339,7 +322,7 @@ export class App implements OnInit, OnDestroy {
     this.closeMenu();
 
     await this.siteRulesService.addRule(
-      this.currentUrlPattern,
+      this.analysis?.domain!,
       'ignore',
     );
   }
@@ -347,14 +330,14 @@ export class App implements OnInit, OnDestroy {
   reportFalsePositive(): void {
     this.closeMenu();
 
-    // Пізніше тут можна відкрити окрему форму або сторінку feedback.
+    // TODO: add report
     console.log('Report false positive');
   }
 
   openAbout(): void {
     this.closeMenu();
 
-    // Пізніше тут можна показати about screen.
+    // TODO: add about
     console.log('Open about extension');
   }
 }

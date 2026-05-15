@@ -109,22 +109,22 @@ export const CONFIG = {
 
   riskThresholds: {
     medium: 3,
-    high: 7,
+    high: 5,
   },
 
-  riskScores: {
-    noReturnPolicy: 2,
-    noWarranty: 2,
-    noContacts: 2,
-    aggressiveMarketing: 1,
-    // fakeReviews: 1,
-    nameAndPhoneOnlyForm: 2,
-    noLegalInfo: 2,
-    // suspiciousPrice: 1,
-    // onePageStructure: 1,
-    nonTrustedDomainZone: 1,
-    suspiciousDomainZone: 1,
-  },
+  // riskScores: {
+  //   noReturnPolicy: 2,
+  //   noWarranty: 2,
+  //   noContacts: 2,
+  //   aggressiveMarketing: 1,
+  //   // fakeReviews: 1,
+  //   nameAndPhoneOnlyForm: 2,
+  //   noLegalInfo: 2,
+  //   // suspiciousPrice: 1,
+  //   // onePageStructure: 1,
+  //   nonTrustedDomainZone: 1,
+  //   suspiciousDomainZone: 1,
+  // },
 
   //   suspiciousPrice: {
   //     maxLowPrice: 299,
@@ -133,26 +133,104 @@ export const CONFIG = {
   //   reviewCheck: {
   //     minReviewWords: 4,
   //   },
-  messages: {
-    noReturnPolicy: "Не знайдено інформацію про повернення або обмін товару.",
-    noWarranty: "Не знайдено інформацію про гарантію.",
-    noContacts: "Не знайдено контактної інформації продавця.",
-    aggressiveMarketing: "Виявлено ознаки агресивної реклами.",
-    // fakeReviews:
-    //   "На сторінці виявлено багато типових слів із відгуків. Можлива наявність шаблонних або фейкових відгуків.",
-    nameAndPhoneOnlyForm:
-      "У формі замовлення не знайдено полів для введення адреси або даних про доставку.",
-    noLegalInfo: "Не знайдено юридичної інформації про продавця.",
-    // suspiciousPrice:
-    //   "Виявлено ознаки підозріло низької ціни разом з акційними формулюваннями.",
-    // onePageStructure:
-    //   "Сторінка схожа на односторінковий продаючий сайт без повноцінної структури інтернет-магазину.",
-    suspiciousDomainZone:
-      "Домен сайту має нетипову або потенційно підозрілу доменну зону.",
-    notProductPage: "Сторінка не схожа на сторінку продажу товару.",
-    normalShopPage:
-      "Сторінка схожа на звичайний інтернет-магазин або маркетплейс.",
+
+  // analysis: {
+
+  // },
+
+  checks: {
+    returnPolicy: {
+      riskScore: 2,
+      message: "Відсутня інформація про повернення товару",
+      label: "Повернення",
+      icon: "",
+      statuses: {
+        positive: "знайдено",
+        negative: "не знайдено"
+      }
+    },
+    warranty: {
+      riskScore: 2,
+      message: "Немає інформації про гарантію",
+      label: "Гарантія",
+      icon: "",
+      statuses: {
+        positive: "знайдено",
+        negative: "не знайдено"
+      }
+    },
+    contacts: {
+      riskScore: 2,
+      message: "Відсутня контактна інформація",
+      label: "Контакти",
+      icon: "",
+      statuses: {
+        positive: "присутні",
+        negative: "відсутні"
+      }
+    },
+    legalInfo: {
+      riskScore: 2,
+      message: "Немає юридичних даних продавця",
+      label: "Юридичні дані",
+      icon: "",
+      statuses: {
+        positive: "присутні",
+        negative: "відсутні"
+      }
+    },
+    aggressiveMarketing: {
+      riskScore: 1,
+      message: "Агресивні маркетингові формулювання",
+      label: "Агресивний маркетинг",
+      icon: "",
+      statuses: {
+        positive: "не виявлено",
+        negative: "виявлено"
+      }
+    },
+    nameAndPhoneOnlyForm: {
+      riskScore: 2,
+      message: "Форма без інформації про доставку",
+      label: "Форма замовлення",
+      icon: "",
+      statuses: {
+        positive: "повна",
+        negative: "лише ім'я та телефон"
+      }
+    },
+    domainZone: {
+      riskScore: 2,
+      message: "Потенційно підозріла доменна зона",
+      label: "Доменна зона",
+      icon: "",
+      statuses: {
+        positive: "типова",
+        negative: "підозріла"
+      }
+    },
   },
+
+  // messages: {
+  //   noReturnPolicy: "Не знайдено інформацію про повернення або обмін товару.",
+  //   noWarranty: "Не знайдено інформацію про гарантію.",
+  //   noContacts: "Не знайдено контактної інформації продавця.",
+  //   aggressiveMarketing: "Виявлено ознаки агресивної реклами.",
+  //   // fakeReviews:
+  //   //   "На сторінці виявлено багато типових слів із відгуків. Можлива наявність шаблонних або фейкових відгуків.",
+  //   nameAndPhoneOnlyForm:
+  //     "У формі замовлення не знайдено полів для введення адреси або даних про доставку.",
+  //   noLegalInfo: "Не знайдено юридичної інформації про продавця.",
+  //   // suspiciousPrice:
+  //   //   "Виявлено ознаки підозріло низької ціни разом з акційними формулюваннями.",
+  //   // onePageStructure:
+  //   //   "Сторінка схожа на односторінковий продаючий сайт без повноцінної структури інтернет-магазину.",
+  //   suspiciousDomainZone:
+  //     "Домен сайту має нетипову або потенційно підозрілу доменну зону.",
+  //   notProductPage: "Сторінка не схожа на сторінку продажу товару.",
+  //   normalShopPage:
+  //     "Сторінка схожа на звичайний інтернет-магазин або маркетплейс.",
+  // },
 
   ui: {
     popupTitle: "Shopping Guard",

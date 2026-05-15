@@ -1,26 +1,19 @@
 import { AnalysisCheck } from "./analysis-check.model";
 import { AnalysisStatus } from "./analysis-status.model";
 import { PageType } from "./page-type.model";
-import { RiskLevel } from "./risk-level.model";
-import { RiskSignal } from "./risk-signal.model";
+
+export type RiskLevel =
+    | 'low'
+    | 'medium'
+    | 'high';
 
 export interface AnalysisResult {
     status: AnalysisStatus;
-
     pageType: PageType;
-
+    url: string;
+    domain: string;
+    checks: AnalysisCheck[];
     riskLevel?: RiskLevel;
     totalScore?: number;
-    riskSignals: RiskSignal[];
-
-    message?: string;
     analyzedAt?: string;
-
-    url?: string;
-    title?: string;
-
-    domain?: string;
-    detailsMessage?: string;
-    pageTypeDescription?: string;
-    checks?: AnalysisCheck[];
 }

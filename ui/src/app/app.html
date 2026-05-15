@@ -1,4 +1,4 @@
-<div class="popup" [ngClass]="'theme-' + riskUi.theme">
+<div class="popup" [ngClass]="'theme-' + risk.theme">
   <header class="popup-header">
     <div class="brand">
       <img class="logo" [src]="logoSrc" alt="Shopping Guard" />
@@ -58,14 +58,14 @@
   <main class="content" *ngIf="!isLoading; else loadingTemplate">
     <section class="summary-card">
       <div class="risk-icon">
-        <span *ngIf="riskUi.icon === 'warning'">!</span>
-        <span *ngIf="riskUi.icon === 'check'">✓</span>
-        <span *ngIf="riskUi.icon === 'unknown'">?</span>
+        <span *ngIf="analysis?.riskLevel === 'high' || analysis?.riskLevel === 'medium'">!</span>
+        <span *ngIf="analysis?.riskLevel === 'low'">✓</span>
+        <span *ngIf="analysis?.status !== 'analyzed'">?</span>
       </div>
 
       <div class="summary-text">
-        <h2>{{ riskUi.title }}</h2>
-        <p>{{ riskUi.message }}</p>
+        <h2>{{ risk.label }}</h2>
+        <p>{{ risk.description }}</p> 
       </div>
     </section>
 
@@ -74,8 +74,8 @@
         <h3>Що насторожує</h3>
 
         <ul *ngIf="shouldShowSignals; else noSignalsTemplate">
-          <li *ngFor="let signal of riskSignals">
-            {{ signal }}
+          <li *ngFor="let failedCheck of failedChecks">
+            {{ failedCheck.message }}
           </li>
         </ul>
 
@@ -99,7 +99,7 @@
 
           <div>
             <strong>Бали ризику:</strong>
-            <span class="risk-score">{{ riskScoreLabel }}</span>
+            <span class="risk-score">{{ riskScore }}</span>
           </div>
         </div>
       </div>
@@ -119,12 +119,12 @@
             <div class="detail-main">
               <div class="detail-title">Домен</div>
               <div class="detail-description">
-                {{ analysis?.detailsMessage || 'Додаткова інформація про домен відсутня.' }}
+                {{ 'Додаткова інформація про домен відсутня.' }}
               </div>
             </div>
 
             <div class="detail-value">
-              {{ analysis?.domain || currentUrlPattern }}
+              {{ analysis?.domain }}
             </div>
           </div>
 
@@ -136,7 +136,7 @@
             <div class="detail-main">
               <div class="detail-title">Тип сторінки</div>
               <div class="detail-description">
-                {{ analysis?.pageTypeDescription || defaultPageTypeDescription }}
+                {{ pageTypeDescription }}
               </div>
             </div>
 
@@ -153,12 +153,12 @@
             <div class="detail-main">
               <div class="detail-title">Бали ризику</div>
               <div class="detail-description">
-                {{ riskScoreDescription }}
+                {{ riskScoreLabel }} (шкала 0-10)
               </div>
             </div>
 
             <div class="detail-value detail-score">
-              {{ riskScoreLabel }}
+              {{ riskScore }}
             </div>
           </div>
 
@@ -170,10 +170,10 @@
               <span>Деталі перевірок</span>
             </div>
 
-            <div class="check-list" *ngIf="analysis?.checks?.length; else emptyChecksTemplate">
-              <div class="check-item" *ngFor="let check of analysis?.checks"
-                [class.check-negative]="check.status === 'negative'"
-                [class.check-positive]="check.status === 'positive'">
+            <div class="check-list" *ngIf="checks.length">
+              <div class="check-item" *ngFor="let check of checks"
+                [class.check-negative]="check.status === 'failed'"
+                [class.check-positive]="check.status === 'passed'">
                 <span class="check-label">{{ check.label }}</span>
                 <span class="check-value">{{ check.value }}</span>
               </div>
