@@ -47,7 +47,7 @@ export class App implements OnInit, OnDestroy {
     showDetailsAutomatically: false,
   };
 
-  // private stopWatchingAnalysis?: () => void;
+  private stopWatchingAnalysis?: () => void;
 
   constructor(
     private readonly analysisStorage: AnalysisResultStorageService,
@@ -76,10 +76,11 @@ export class App implements OnInit, OnDestroy {
 
     this.isLoading = false;
 
-    // this.stopWatchingAnalysis = this.analysisStorage.watchAnalysis((analysis) => {
-    //   this.analysis = analysis;
-    //   this.cdr.detectChanges();
-    // });
+    this.stopWatchingAnalysis = this.analysisStorage.watchAnalysis(analysisKey,
+      (analysis) => {
+        this.analysis = analysis;
+        this.cdr.detectChanges();
+      });
 
     // this.cdr.detectChanges();
 
@@ -92,7 +93,7 @@ export class App implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    //   this.stopWatchingAnalysis?.();
+    this.stopWatchingAnalysis?.();
   }
 
   get popupTheme(): string {
@@ -378,10 +379,20 @@ export class App implements OnInit, OnDestroy {
 
   async rerunAnalysis(): Promise<void> {
     this.closeMenu();
+
+    if (this.isSiteIgnored) {
+      return;
+    }
+
     this.isLoading = true;
     this.cdr.detectChanges();
 
-    await this.analysisStorage.rerunAnalysis();
+    // await this.analysisStorage.rerunAnalysis();
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+    chrome.runtime.sendMessage(
+      { action: "RUN_ANALYSIS", tabId: tab.id, tabUrl: tab.url });
 
     this.isLoading = false;
     this.cdr.detectChanges();
@@ -419,7 +430,7 @@ export class App implements OnInit, OnDestroy {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
         let status;
-        
+
         if (this.analysis?.status === AnalysisStatus.ANALYZED) {
           switch (this.analysis?.riskLevel) {
             case 'high':
@@ -439,8 +450,6 @@ export class App implements OnInit, OnDestroy {
         chrome.runtime.sendMessage(
           { action: "UPDATE_EXTENSION_STATUS", tabId: tab.id, extensionStatus: status });
       }
-
-
     }
 
     this.isSiteMarkedAsSafe = !this.isSiteMarkedAsSafe;
@@ -488,16 +497,6 @@ export class App implements OnInit, OnDestroy {
     this.isSiteIgnored = !this.isSiteIgnored;
 
     this.cdr.detectChanges();
-  }
-
-  async ignoreSite(): Promise<void> {
-    this.closeMenu();
-    await this.siteRulesService.ignoreSite(this.analysis?.domain!);
-  }
-
-  async unignoreSite(): Promise<void> {
-    this.closeMenu();
-    await this.siteRulesService.unignoreSite(this.analysis?.domain!);
   }
 
   reportFalsePositive(): void {

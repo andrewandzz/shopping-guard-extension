@@ -26,48 +26,48 @@ export class AnalysisResultStorageService {
     });
   }
 
-  // watchAnalysis(callback: (analysis: AnalysisResult | null) => void): () => void {
-  //   if (!this.isChromeStorageAvailable()) {
-  //     return () => { };
+  watchAnalysis(analysisKey: string, callback: (analysis: AnalysisResult | null) => void): () => void {
+    if (!this.isChromeStorageAvailable()) {
+      return () => { };
+    }
+
+    const listener = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      areaName: string,
+    ) => {
+      if (areaName !== 'local') {
+        return;
+      }
+
+      const change = changes[analysisKey];
+
+      if (!change) {
+        return;
+      }
+
+      callback((change.newValue as AnalysisResult | undefined) ?? null);
+    };
+
+    chrome.storage.onChanged.addListener(listener);
+
+    return () => {
+      chrome.storage.onChanged.removeListener(listener);
+    };
+  }
+
+  // async rerunAnalysis(): Promise<void> {
+  //   if (!chrome?.runtime?.sendMessage) {
+  //     return;
   //   }
 
-  //   const listener = (
-  //     changes: { [key: string]: chrome.storage.StorageChange },
-  //     areaName: string,
-  //   ) => {
-  //     if (areaName !== 'local') {
-  //       return;
-  //     }
-
-  //     const change = changes[this.analysisKey];
-
-  //     if (!change) {
-  //       return;
-  //     }
-
-  //     callback((change.newValue as AnalysisResult | undefined) ?? null);
-  //   };
-
-  //   chrome.storage.onChanged.addListener(listener);
-
-  //   return () => {
-  //     chrome.storage.onChanged.removeListener(listener);
-  //   };
+  //   try {
+  //     await chrome.runtime.sendMessage({
+  //       type: 'RERUN_ANALYSIS', // TODO: add to background.ts
+  //     });
+  //   } catch {
+  //     // Якщо background ще не має такого listener, просто ігноруємо помилку.
+  //   }
   // }
-
-  async rerunAnalysis(): Promise<void> {
-    if (!chrome?.runtime?.sendMessage) {
-      return;
-    }
-
-    try {
-      await chrome.runtime.sendMessage({
-        type: 'RERUN_ANALYSIS', // TODO: add to background.ts
-      });
-    } catch {
-      // Якщо background ще не має такого listener, просто ігноруємо помилку.
-    }
-  }
 
   private isChromeStorageAvailable(): boolean {
     return typeof chrome !== 'undefined' && !!chrome.storage?.local;

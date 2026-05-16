@@ -7,9 +7,12 @@ import { SiteRule } from "./models/site-rule.model";
 
 chrome.runtime.onMessage.addListener(async (message, _, sendResponse) => {
   if (message.action === "UPDATE_EXTENSION_STATUS") {
-    console.log(message);
     updateExtensionStatus(message.tabId, message.extensionStatus);
     sendResponse();
+  }
+
+  if (message.action === "RUN_ANALYSIS") {
+    runAnalysis(message.tabId, message.tabUrl);
   }
 });
 
@@ -36,6 +39,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
+  runAnalysis(tabId, tab.url);
+});
+
+chrome.tabs.onRemoved.addListener((tabId) => {
+  chrome.storage.local.remove(`analysis_${tabId}`);
+});
+
+function runAnalysis(tabId: number, tabUrl: string) {
   chrome.scripting.executeScript(
     {
       target: { tabId },
@@ -63,10 +74,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
           const pageData = {
             ...response,
-            url: tab.url,
+            url: tabUrl,
           };
 
           const analysisResult = analyzePageData(pageData);
+
+          const domain = new URL(tabUrl).hostname;
 
           if (await isSiteMarkedAsSafe(domain)) {
             updateExtensionStatus(tabId, 'safe');
@@ -96,15 +109,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       );
     },
   );
-});
-
-chrome.tabs.onRemoved.addListener((tabId) => {
-  chrome.storage.local.remove(`analysis_${tabId}`);
-});
+}
 
 function updateExtensionStatus(tabId: number, status: 'danger' | 'warning' | 'safe' | 'neutral') {
-  console.log(tabId);
-
   switch (status) {
     case "danger":
       return setDangerIcon(tabId);
