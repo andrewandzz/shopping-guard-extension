@@ -373,27 +373,27 @@ button {
   font-size: 14px;
 }
 
-.theme-high .details-panel {
+.theme-danger .details-panel {
   border-color: #f9d9dc;
 }
 
-.theme-high .detail-score {
+.theme-danger .detail-score {
   color: #e92b2f;
 }
 
-.theme-medium .details-panel {
+.theme-warning .details-panel {
   border-color: #fde7bd;
 }
 
-.theme-medium .detail-score {
+.theme-warning .detail-score {
   color: #f59e0b;
 }
 
-.theme-low .details-panel {
+.theme-safe .details-panel {
   border-color: #dbeed7;
 }
 
-.theme-low .detail-score {
+.theme-safe .detail-score {
   color: #43a331;
 }
 
@@ -486,72 +486,72 @@ button {
 
 /* Themes */
 
-.theme-high .risk-icon span,
-.theme-high .signals-block li::before {
+.theme-danger .risk-icon span,
+.theme-danger .signals-block li::before {
   background: #e92b2f;
 }
 
-.theme-high .content {
+.theme-danger .content {
   border-color: #f9d9dc;
 }
 
-.theme-high .summary-card {
+.theme-danger .summary-card {
   background: #fff5f6;
   border-bottom-color: #f9d9dc;
 }
 
-.theme-high .risk-icon {
+.theme-danger .risk-icon {
   background: #ffd9dd;
 }
 
-.theme-high .summary-text h2,
-.theme-high .risk-score {
+.theme-danger .summary-text h2,
+.theme-danger .risk-score {
   color: #e92b2f;
 }
 
-.theme-medium .risk-icon span,
-.theme-medium .signals-block li::before {
+.theme-warning .risk-icon span,
+.theme-warning .signals-block li::before {
   background: #f59e0b;
 }
 
-.theme-medium .content {
+.theme-warning .content {
   border-color: #fde7bd;
 }
 
-.theme-medium .summary-card {
+.theme-warning .summary-card {
   background: #fff9ef;
   border-bottom-color: #fde7bd;
 }
 
-.theme-medium .risk-icon {
+.theme-warning .risk-icon {
   background: #ffedc8;
 }
 
-.theme-medium .summary-text h2,
-.theme-medium .risk-score {
+.theme-warning .summary-text h2,
+.theme-warning .risk-score {
   color: #f59e0b;
 }
 
-.theme-low .risk-icon span,
-.theme-low .signals-block li::before {
+.theme-safe .risk-icon span,
+.theme-safe .signals-block li::before {
   background: #43a331;
 }
 
-.theme-low .content {
+.theme-safe .content {
   border-color: #dbeed7;
 }
 
-.theme-low .summary-card {
+.theme-safe .summary-card {
   background: #f8fcf7;
   border-bottom-color: #dbeed7;
 }
 
-.theme-low .risk-icon {
+.theme-safe .risk-icon {
   background: #dff0d9;
 }
 
-.theme-low .summary-text h2,
-.theme-low .risk-score {
+.theme-safe .summary-text h2,
+.theme-safe .risk-score {
   color: #43a331;
 }
 

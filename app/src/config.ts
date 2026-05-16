@@ -109,7 +109,7 @@ export const CONFIG = {
 
   riskThresholds: {
     medium: 3,
-    high: 5,
+    high: 7,
   },
 
   // riskScores: {
@@ -266,7 +266,7 @@ export const CONFIG = {
     },
     badges: {
       highRisk: {
-        text: "X",
+        text: "!",
         color: "#d93025",
       },
       mediumRisk: {
@@ -278,7 +278,7 @@ export const CONFIG = {
         color: "#22c55e",
       },
       notAnalyzed: {
-        text: "\u2014",
+        text: "-",
         color: "#f0f0f0",
       },
     },

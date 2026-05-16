@@ -9,10 +9,10 @@ export type RiskLevel =
 
 export interface AnalysisResult {
     status: AnalysisStatus;
-    pageType: PageType;
-    url: string;
     domain: string;
-    checks: AnalysisCheck[];
+    // url: string;
+    pageType?: PageType;
+    checks?: AnalysisCheck[];
     riskLevel?: RiskLevel;
     totalScore?: number;
     analyzedAt?: string;

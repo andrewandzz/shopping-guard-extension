@@ -5,10 +5,10 @@ import { RiskLevel } from "./risk-level.model";
 
 export interface AnalysisResult {
     status: AnalysisStatus;
-    pageType: PageType;
-    url: string;
+    // url: string;
     domain: string;
-    checks: AnalysisCheck[];
+    pageType?: PageType;
+    checks?: AnalysisCheck[];
     riskLevel?: RiskLevel;
     totalScore?: number;
     analyzedAt?: string;

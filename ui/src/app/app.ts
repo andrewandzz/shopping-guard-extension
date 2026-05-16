@@ -16,7 +16,7 @@ import { AnalysisResultStorageService } from './services/analysis-result-storage
 import { SettingsService } from './services/settings.service';
 import { SiteRulesService } from './services/site-rules.service';
 import { DomSanitizer } from '@angular/platform-browser';
-import { CHECK_CONFIG, PAGE_TYPE_CONFIG, RISK_LEVEL_CONFIG } from './config/config';
+import { CHECK_CONFIG, ICON_CONFIG, PAGE_TYPE_CONFIG, RISK_LEVEL_CONFIG } from './config/config';
 
 // type RiskTheme = 'high' | 'medium' | 'low' | 'neutral';
 
@@ -40,6 +40,8 @@ export class App implements OnInit, OnDestroy {
   isLoading = true;
   isMenuOpen = false;
   isDetailsOpen = false;
+  isSiteMarkedAsSafe = false;
+  isSiteIgnored = false;
 
   settings: Settings = {
     showDetailsAutomatically: false,
@@ -79,24 +81,57 @@ export class App implements OnInit, OnDestroy {
     //   this.cdr.detectChanges();
     // });
 
+    // this.cdr.detectChanges();
+
+    this.isSiteMarkedAsSafe = await this.siteRulesService.isSiteMarkedAsSafe(this.analysis?.domain!);
+    this.isSiteIgnored = await this.siteRulesService.isSiteIgnored(this.analysis?.domain!);
+
     this.cdr.detectChanges();
+
+    Object.values(ICON_CONFIG).forEach(iconSrc => this.sanitizer.bypassSecurityTrustResourceUrl(iconSrc));
   }
 
   ngOnDestroy(): void {
     //   this.stopWatchingAnalysis?.();
   }
 
-  get logoSrc(): string {
-    let src: string;
-
-    if (this.analysis?.status === AnalysisStatus.ANALYZED) {
-      src = RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].icon;
-    } else {
-      src = 'icons/icon-grey.svg'; // TODO: maybe revise
+  get popupTheme(): string {
+    if (this.isSiteMarkedAsSafe) {
+      return 'safe';
     }
 
-    this.sanitizer.bypassSecurityTrustResourceUrl(src);
-    return src;
+    if (this.analysis?.status === AnalysisStatus.ANALYZED) {
+      switch (this.analysis?.riskLevel) {
+        case 'high':
+          return 'danger';
+        case 'medium':
+          return 'warning';
+        case 'low':
+          return 'safe';
+      }
+    }
+
+    return 'neutral';
+  }
+
+  get logoSrc(): string {
+
+    if (this.isSiteMarkedAsSafe) {
+      return ICON_CONFIG['safe'];
+    }
+
+    if (this.analysis?.status === AnalysisStatus.ANALYZED) {
+      switch (this.analysis?.riskLevel) {
+        case 'high':
+          return ICON_CONFIG['danger'];
+        case 'medium':
+          return ICON_CONFIG['warning'];
+        case 'low':
+          return ICON_CONFIG['safe'];
+      }
+    }
+
+    return ICON_CONFIG['neutral'];
   }
 
   // get riskUi(): RiskUiConfig {
@@ -171,21 +206,62 @@ export class App implements OnInit, OnDestroy {
   //   }
   // }
 
-  get risk(): { label: string, description: string, theme: string, icon: string } {
-    if (this.analysis?.status !== AnalysisStatus.ANALYZED) {
-      return {
-        label: 'Не проаналізовано',
-        description: 'Ми ще не перевірили цей сайт.',
-        theme: 'neutral',
-        icon: 'icons/icon-grey.svg',
-      }
+  // get risk(): { label: string, description: string, theme: string, icon: string } {
+  //   if (this.analysis?.status !== AnalysisStatus.ANALYZED) {
+  //     return {
+  //       label: 'Не проаналізовано',
+  //       description: 'Ми ще не перевірили цей сайт.',
+  //       theme: 'neutral',
+  //       icon: 'icons/icon-grey.svg',
+  //     }
+  //   }
+
+  //   return {
+  //     label: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].label,
+  //     description: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].description,
+  //     theme: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].theme,
+  //     icon: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].icon
+  //   }
+  // }
+
+  get riskLabel(): string {
+    if (this.isSiteMarkedAsSafe) {
+      return 'Безпечно';
     }
 
-    return {
-      label: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].label,
-      description: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].description,
-      theme: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].theme,
-      icon: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].icon
+    switch (this.analysis?.status) {
+      case AnalysisStatus.NOT_ANALYZED:
+      case AnalysisStatus.NOT_APPLICABLE:
+        return 'Не проаналізовано';
+      case AnalysisStatus.ANALYZING:
+        return 'Аналізуємо';
+      case AnalysisStatus.ERROR:
+        return 'Помилка';
+      case AnalysisStatus.ANALYZED:
+        return RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].label;
+      default:
+        return '-';
+    }
+  }
+
+  get riskDescription(): string {
+    if (this.isSiteMarkedAsSafe) {
+      return 'Сайт було помічено як безпечний.';
+    }
+
+    switch (this.analysis?.status) {
+      case AnalysisStatus.NOT_ANALYZED:
+        return 'Сайт було виключено з аналізу.';
+      case AnalysisStatus.ANALYZING:
+        return 'Сторінка аналізується...';
+      case AnalysisStatus.NOT_APPLICABLE:
+        return `Сторінка не підлягає аналізу, оскільки це ${PAGE_TYPE_CONFIG[this.analysis?.pageType!].label}.`;
+      case AnalysisStatus.ERROR:
+        return 'Сталася помилка під час аналізу.'
+      case AnalysisStatus.ANALYZED:
+        return RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].description;
+      default:
+        return '-';
     }
   }
 
@@ -309,22 +385,42 @@ export class App implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  async markSiteAsSafe(): Promise<void> {
-    this.closeMenu();
+  async toggleMarkSiteAsSafe(): Promise<void> {
+    if (!(await this.siteRulesService.isSiteMarkedAsSafe(this.analysis?.domain!))) {
+      await this.siteRulesService.markSiteAsSafe(this.analysis?.domain!);
 
-    await this.siteRulesService.addRule(
-      this.analysis?.domain!,
-      'mark_as_safe',
-    );
+      // TODO: send message to update icon to safe
+    } else {
+      await this.siteRulesService.unmarkSiteAsSafe(this.analysis?.domain!);
+
+      // TODO: send message to update icon to original
+    }
+
+    this.isSiteMarkedAsSafe = !this.isSiteMarkedAsSafe;
+
+    this.cdr.detectChanges();
+  }
+
+  async toggleIgnoreSite(): Promise<void> {
+    if (!(await this.siteRulesService.isSiteIgnored(this.analysis?.domain!))) {
+      await this.siteRulesService.ignoreSite(this.analysis?.domain!);
+    } else {
+      await this.siteRulesService.unignoreSite(this.analysis?.domain!);
+    }
+
+    this.isSiteIgnored = !this.isSiteIgnored;
+
+    this.cdr.detectChanges();
   }
 
   async ignoreSite(): Promise<void> {
     this.closeMenu();
+    await this.siteRulesService.ignoreSite(this.analysis?.domain!);
+  }
 
-    await this.siteRulesService.addRule(
-      this.analysis?.domain!,
-      'ignore',
-    );
+  async unignoreSite(): Promise<void> {
+    this.closeMenu();
+    await this.siteRulesService.unignoreSite(this.analysis?.domain!);
   }
 
   reportFalsePositive(): void {

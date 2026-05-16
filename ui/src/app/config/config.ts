@@ -1,5 +1,6 @@
 import { AnalysisCheckId, AnalysisCheckStatus } from "../models/analysis-check.model";
 import { RiskLevel } from "../models/analysis-result.model";
+import { AnalysisStatus } from "../models/analysis-status.model";
 import { PageType } from "../models/page-type.model";
 
 type CheckConfig = Record<AnalysisCheckId, {
@@ -23,11 +24,11 @@ type RiskLevelConfig = Record<RiskLevel, {
 
 export const PAGE_TYPE_CONFIG: PageTypeConfig = {
     [PageType.NOT_PRODUCT_PAGE]: {
-        label: 'not product page',
+        label: 'не сторінка продажу',
         description: 'Сторінка не містить достатніх ознак продажу товару.',
     },
     [PageType.NORMAL_SHOP_PAGE]: {
-        label: 'category page',
+        label: 'звичайна сторінка продажу',
         description: 'Сторінка схожа на звичайний магазин або каталог товарів.',
     },
     [PageType.UNKNOWN_PRODUCT_PAGE]: { // TODO: rename
@@ -106,19 +107,26 @@ export const RISK_LEVEL_CONFIG: RiskLevelConfig = {
     high: {
         label: 'Високий ризик',
         description: 'Виявлено кілька підозрілих ознак на цьому сайті.',
-        theme: 'high',
+        theme: 'danger',
         icon: 'icons/icon-red.svg',
     },
     medium: {
         label: 'Середній ризик',
         description: 'Виявлено деякі ознаки, що можуть свідчити про ризики.',
-        theme: 'medium',
+        theme: 'warning',
         icon: 'icons/icon-amber.svg',
     },
     low: {
         label: 'Низький ризик',
-        description: 'Сайт виглядає безпечно. Підозрілих ознак не виявлено.',
-        theme: 'low',
+        description: 'Сайт виглядає достатньо безпечно.',
+        theme: 'safe',
         icon: 'icons/icon-green.svg',
     },
+};
+
+export const ICON_CONFIG: Record<'danger' | 'warning' | 'safe' | 'neutral', string> = {
+    danger: 'icons/icon-red.svg',
+    warning: 'icons/icon-amber.svg',
+    safe: 'icons/icon-green.svg',
+    neutral: 'icons/icon-grey.svg'
 };

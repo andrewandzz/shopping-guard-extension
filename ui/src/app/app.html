@@ -1,4 +1,4 @@
-<div class="popup" [ngClass]="'theme-' + risk.theme">
+<div class="popup" [ngClass]="'theme-' + popupTheme">
   <header class="popup-header">
     <div class="brand">
       <img class="logo" [src]="logoSrc" alt="Shopping Guard" />
@@ -29,14 +29,16 @@
         </span>
       </button>
 
-      <button type="button" class="menu-item" (click)="markSiteAsSafe()">
+      <button type="button" class="menu-item" (click)="toggleMarkSiteAsSafe()">
         <span class="menu-icon">▿</span>
-        <span>Позначити сайт як безпечний</span>
+        <span *ngIf="!isSiteMarkedAsSafe">Позначити сайт як безпечний</span>
+        <span *ngIf="isSiteMarkedAsSafe">Зняти позначку сайту як безпечний</span>
       </button>
 
-      <button type="button" class="menu-item" (click)="ignoreSite()">
+      <button type="button" class="menu-item" (click)="toggleIgnoreSite()">
         <span class="menu-icon">⊗</span>
-        <span>Не аналізувати цей сайт</span>
+        <span *ngIf="!isSiteIgnored">Не аналізувати цей сайт</span>
+        <span *ngIf="isSiteIgnored">Аналізувати цей сайт</span>
       </button>
 
       <div class="menu-divider"></div>
@@ -60,16 +62,16 @@
       <div class="risk-icon">
         <span *ngIf="analysis?.riskLevel === 'high' || analysis?.riskLevel === 'medium'">!</span>
         <span *ngIf="analysis?.riskLevel === 'low'">✓</span>
-        <span *ngIf="analysis?.status !== 'analyzed'">?</span>
+        <span *ngIf="analysis?.status !== 'analyzed'">-</span>
       </div>
 
       <div class="summary-text">
-        <h2>{{ risk.label }}</h2>
-        <p>{{ risk.description }}</p> 
+        <h2>{{ riskLabel }}</h2>
+        <p>{{ riskDescription }}</p>
       </div>
     </section>
 
-    <section class="info-card">
+    <section class="info-card" *ngIf="analysis?.status === 'analyzed'">
       <div class="signals-block">
         <h3>Що насторожує</h3>
 
@@ -105,7 +107,7 @@
       </div>
     </section>
 
-    <section class="details">
+    <section class="details" *ngIf="analysis?.status === 'analyzed'">
       <button type="button" class="details-toggle" (click)="toggleDetails()">
         <span>Детальніше</span>
         <span class="chevron" [class.chevron-open]="isDetailsOpen">⌄</span>
@@ -171,8 +173,7 @@
             </div>
 
             <div class="check-list" *ngIf="checks.length">
-              <div class="check-item" *ngFor="let check of checks"
-                [class.check-negative]="check.status === 'failed'"
+              <div class="check-item" *ngFor="let check of checks" [class.check-negative]="check.status === 'failed'"
                 [class.check-positive]="check.status === 'passed'">
                 <span class="check-label">{{ check.label }}</span>
                 <span class="check-value">{{ check.value }}</span>

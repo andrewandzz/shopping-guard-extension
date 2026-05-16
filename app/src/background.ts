@@ -1,11 +1,35 @@
 import { analyzePageData } from "./analysis";
 import { CONFIG } from "./config";
 import { AnalysisResult } from "./models/analysis-result.model";
+import { AnalysisStatus } from "./models/analysis-status.model";
+import { RiskLevel } from "./models/risk-level.model";
+import { SiteRule } from "./models/site-rule.model";
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") return;
 
   if (!tab.url || !tab.url.startsWith("http")) return;
+
+  // const items = await chrome.storage.local.get('site_rules');
+  // const rules = items['site_rules'] as SiteRule[] ?? [];
+
+  const domain = new URL(tab.url!).hostname;
+
+  if (await isSiteIgnored(domain)) {
+    // no analysis conducted
+    const analysisResult: AnalysisResult = {
+      status: AnalysisStatus.NOT_ANALYZED,
+      domain: domain, // TODO: maybe not needed
+    };
+
+    updateExtensionStatus(tabId, 'neutral');
+
+    chrome.storage.local.set({
+      [`analysis_${tabId}`]: analysisResult,
+    });
+
+    return;
+  }
 
   chrome.scripting.executeScript(
     {
@@ -24,7 +48,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       chrome.tabs.sendMessage(
         tabId,
         { action: "GET_PAGE_DATA" },
-        (response) => {
+        async (response) => {
           if (chrome.runtime.lastError) {
             console.error("Message error:", chrome.runtime.lastError.message);
             return;
@@ -37,12 +61,27 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
             url: tab.url,
           };
 
-          const result = analyzePageData(pageData);
+          const analysisResult = analyzePageData(pageData);
 
-          updateExtensionStatus(tabId, result);
+          if (await isSiteMarkedAsSafe(domain)) {
+            updateExtensionStatus(tabId, 'safe');
+          } else {
+            switch (analysisResult.riskLevel) {
+              case RiskLevel.HIGH:
+                updateExtensionStatus(tabId, 'danger');
+                break;
+              case RiskLevel.MEDIUM:
+                updateExtensionStatus(tabId, 'warning');
+                break;
+              case RiskLevel.LOW:
+                updateExtensionStatus(tabId, 'safe');
+                break;
+            }
+          }
+
 
           chrome.storage.local.set({
-            [`analysis_${tabId}`]: result,
+            [`analysis_${tabId}`]: analysisResult,
           });
         },
       );
@@ -54,20 +93,16 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   chrome.storage.local.remove(`analysis_${tabId}`);
 });
 
-function updateExtensionStatus(tabId: number, result: AnalysisResult) {
-  switch (result.riskLevel) {
-    case "high":
-      setDangerIcon(tabId);
-      break;
-    case "medium":
-      setWarningIcon(tabId);
-      break;
-    case "low":
-      setSafeIcon(tabId);
-      break;
-    default:
-      setNeutralIcon(tabId);
-      break;
+function updateExtensionStatus(tabId: number, status: 'danger' | 'warning' | 'safe' | 'neutral') {
+  switch (status) {
+    case "danger":
+      return setDangerIcon(tabId);
+    case "warning":
+      return setWarningIcon(tabId);
+    case "safe":
+      return setSafeIcon(tabId);
+    case 'neutral':
+      return setNeutralIcon(tabId);
   }
 }
 
@@ -145,4 +180,16 @@ function setNeutralIcon(tabId: number) {
     tabId,
     path: CONFIG.backgroundUi.icons.neutral,
   });
+}
+
+async function isSiteIgnored(domain: string): Promise<boolean> {
+  const items = await chrome.storage.local.get('site_rules');
+  const rules = items['site_rules'] as SiteRule[] ?? [];
+  return rules.some(rule => rule.domain === domain && rule.action === 'ignore');
+}
+
+async function isSiteMarkedAsSafe(domain: string): Promise<boolean> {
+  const items = await chrome.storage.local.get('site_rules');
+  const rules = items['site_rules'] as SiteRule[] ?? [];
+  return rules.some(rule => rule.domain === domain && rule.action === 'mark_as_safe');
 }

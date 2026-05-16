@@ -218,7 +218,7 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
     return {
       status: AnalysisStatus.NOT_APPLICABLE,
       pageType,
-      url: pageData.url,
+      // url: pageData.url,
       domain: new URL(pageData.url).hostname,
       checks: [],
     };
@@ -228,7 +228,7 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
     return {
       status: AnalysisStatus.ANALYZED,
       pageType,
-      url: pageData.url,
+      // url: pageData.url,
       domain: new URL(pageData.url).hostname,
       riskLevel: RiskLevel.LOW,
       totalScore: 1, // TODO: fix?
@@ -268,7 +268,7 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
     totalScore,
     pageType,
     analyzedAt: new Date().toISOString(),
-    url: pageData.url,
+    // url: pageData.url,
     domain: new URL(pageData.url).hostname,
     checks: checks,
   };
