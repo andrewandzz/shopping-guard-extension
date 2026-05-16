@@ -5,13 +5,18 @@ import { AnalysisStatus } from "./models/analysis-status.model";
 import { RiskLevel } from "./models/risk-level.model";
 import { SiteRule } from "./models/site-rule.model";
 
+chrome.runtime.onMessage.addListener(async (message, _, sendResponse) => {
+  if (message.action === "UPDATE_EXTENSION_STATUS") {
+    console.log(message);
+    updateExtensionStatus(message.tabId, message.extensionStatus);
+    sendResponse();
+  }
+});
+
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") return;
 
   if (!tab.url || !tab.url.startsWith("http")) return;
-
-  // const items = await chrome.storage.local.get('site_rules');
-  // const rules = items['site_rules'] as SiteRule[] ?? [];
 
   const domain = new URL(tab.url!).hostname;
 
@@ -66,19 +71,23 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           if (await isSiteMarkedAsSafe(domain)) {
             updateExtensionStatus(tabId, 'safe');
           } else {
-            switch (analysisResult.riskLevel) {
-              case RiskLevel.HIGH:
-                updateExtensionStatus(tabId, 'danger');
-                break;
-              case RiskLevel.MEDIUM:
-                updateExtensionStatus(tabId, 'warning');
-                break;
-              case RiskLevel.LOW:
-                updateExtensionStatus(tabId, 'safe');
-                break;
+            if (analysisResult.status === AnalysisStatus.ANALYZED) {
+
+              switch (analysisResult.riskLevel) {
+                case RiskLevel.HIGH:
+                  updateExtensionStatus(tabId, 'danger');
+                  break;
+                case RiskLevel.MEDIUM:
+                  updateExtensionStatus(tabId, 'warning');
+                  break;
+                case RiskLevel.LOW:
+                  updateExtensionStatus(tabId, 'safe');
+                  break;
+              }
+            } else {
+              updateExtensionStatus(tabId, 'neutral');
             }
           }
-
 
           chrome.storage.local.set({
             [`analysis_${tabId}`]: analysisResult,
@@ -94,6 +103,8 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 });
 
 function updateExtensionStatus(tabId: number, status: 'danger' | 'warning' | 'safe' | 'neutral') {
+  console.log(tabId);
+
   switch (status) {
     case "danger":
       return setDangerIcon(tabId);

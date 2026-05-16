@@ -96,6 +96,10 @@ export class App implements OnInit, OnDestroy {
   }
 
   get popupTheme(): string {
+    if (this.isSiteIgnored) {
+      return 'neutral';
+    }
+
     if (this.isSiteMarkedAsSafe) {
       return 'safe';
     }
@@ -115,6 +119,9 @@ export class App implements OnInit, OnDestroy {
   }
 
   get logoSrc(): string {
+    if (this.isSiteIgnored) {
+      return ICON_CONFIG['neutral'];
+    }
 
     if (this.isSiteMarkedAsSafe) {
       return ICON_CONFIG['safe'];
@@ -225,6 +232,10 @@ export class App implements OnInit, OnDestroy {
   // }
 
   get riskLabel(): string {
+    if (this.isSiteIgnored) {
+      return 'Не проаналізовано';
+    }
+
     if (this.isSiteMarkedAsSafe) {
       return 'Безпечно';
     }
@@ -245,8 +256,12 @@ export class App implements OnInit, OnDestroy {
   }
 
   get riskDescription(): string {
+    if (this.isSiteIgnored) {
+      return 'Сайт було виключено з аналізу.';
+    }
+
     if (this.isSiteMarkedAsSafe) {
-      return 'Сайт було помічено як безпечний.';
+      return 'Сайт було позначено як безпечний.';
     }
 
     switch (this.analysis?.status) {
@@ -389,11 +404,43 @@ export class App implements OnInit, OnDestroy {
     if (!(await this.siteRulesService.isSiteMarkedAsSafe(this.analysis?.domain!))) {
       await this.siteRulesService.markSiteAsSafe(this.analysis?.domain!);
 
-      // TODO: send message to update icon to safe
+      if (!this.isSiteIgnored) {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        chrome.runtime.sendMessage(
+          { action: "UPDATE_EXTENSION_STATUS", tabId: tab.id, extensionStatus: 'safe' });
+      }
     } else {
       await this.siteRulesService.unmarkSiteAsSafe(this.analysis?.domain!);
 
       // TODO: send message to update icon to original
+
+      if (!this.isSiteIgnored) {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+        let status;
+        
+        if (this.analysis?.status === AnalysisStatus.ANALYZED) {
+          switch (this.analysis?.riskLevel) {
+            case 'high':
+              status = 'danger';
+              break;
+            case 'medium':
+              status = 'warning';
+              break;
+            case 'low':
+              status = 'safe';
+              break;
+          }
+        } else {
+          status = 'neutral';
+        }
+
+        chrome.runtime.sendMessage(
+          { action: "UPDATE_EXTENSION_STATUS", tabId: tab.id, extensionStatus: status });
+      }
+
+
     }
 
     this.isSiteMarkedAsSafe = !this.isSiteMarkedAsSafe;
@@ -404,8 +451,38 @@ export class App implements OnInit, OnDestroy {
   async toggleIgnoreSite(): Promise<void> {
     if (!(await this.siteRulesService.isSiteIgnored(this.analysis?.domain!))) {
       await this.siteRulesService.ignoreSite(this.analysis?.domain!);
+
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+      chrome.runtime.sendMessage(
+        { action: "UPDATE_EXTENSION_STATUS", tabId: tab.id, extensionStatus: 'neutral' });
     } else {
       await this.siteRulesService.unignoreSite(this.analysis?.domain!);
+
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+      let status;
+
+      if (this.isSiteMarkedAsSafe) {
+        status = 'safe';
+      } else if (this.analysis?.status === AnalysisStatus.ANALYZED) {
+        switch (this.analysis?.riskLevel) {
+          case 'high':
+            status = 'danger';
+            break;
+          case 'medium':
+            status = 'warning';
+            break;
+          case 'low':
+            status = 'safe';
+            break;
+        }
+      } else {
+        status = 'neutral';
+      }
+
+      chrome.runtime.sendMessage(
+        { action: "UPDATE_EXTENSION_STATUS", tabId: tab.id, extensionStatus: status });
     }
 
     this.isSiteIgnored = !this.isSiteIgnored;
