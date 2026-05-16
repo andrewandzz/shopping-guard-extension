@@ -1,7 +1,6 @@
 :host {
   display: block;
   width: 580px;
-  min-height: 456px;
   color: #111827;
 }
 
@@ -15,13 +14,14 @@ button {
 
 .popup {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 580px;
+  min-height: 456px;
+  max-height: 600px;
   padding: 28px 21px 18px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .popup-header {
@@ -109,17 +109,16 @@ button {
   height: 66px;
   color: #ffffff;
   font-size: 52px;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   border-radius: 999px;
 }
 
 .summary-text h2 {
   margin: 0 0 8px;
-  font-size: 28px;
-  line-height: 1.15;
+  font-size: 24px;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
 }
 
 .summary-text p {
@@ -143,8 +142,8 @@ button {
 
 .signals-block h3 {
   margin: 0 0 12px;
-  font-size: 17px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 600;
   color: #111827;
 }
 
@@ -160,6 +159,7 @@ button {
   position: relative;
   font-size: 14px;
   line-height: 1.25;
+  font-weight: 400;
   color: #3f3f46;
 }
 
@@ -206,20 +206,21 @@ button {
   display: block;
   margin-bottom: 5px;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
   color: #111827;
 }
 
 .meta-item span {
   display: block;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.2;
   color: #3f3f46;
 }
 
 .meta-item .risk-score {
   display: inline;
-  font-weight: 800;
+  font-weight: 600;
+  font-size: 16px;
 }
 
 .details {
@@ -237,7 +238,8 @@ button {
   border: 0;
   background: transparent;
   color: #3f3f46;
-  font-size: 19px;
+  font-size: 18px;
+  font-weight: 600;
   text-align: left;
   cursor: pointer;
 }
@@ -286,12 +288,13 @@ button {
 .detail-title {
   margin-bottom: 6px;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
   color: #111827;
 }
 
 .detail-description {
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.35;
   color: #52525b;
 }
@@ -300,6 +303,7 @@ button {
   max-width: 180px;
   color: #52525b;
   font-size: 14px;
+  font-weight: 400;
   line-height: 1.35;
   text-align: right;
   word-break: break-word;
@@ -307,7 +311,7 @@ button {
 
 .detail-score {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .detail-divider {
@@ -326,7 +330,7 @@ button {
   gap: 12px;
   margin-bottom: 10px;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 600;
   color: #111827;
 }
 
@@ -346,6 +350,7 @@ button {
   border-radius: 9px;
   background: #ffffff;
   font-size: 14px;
+  font-weight: 400;
 }
 
 .check-label {
@@ -440,6 +445,7 @@ button {
   background: transparent;
   color: #111827;
   font-size: 16px;
+  font-weight: 400;
   line-height: 1.25;
   text-align: left;
   cursor: pointer;
@@ -638,7 +644,7 @@ button {
   margin: 0 0 4px;
   font-size: 20px;
   line-height: 1.2;
-  font-weight: 800;
+  font-weight: 600;
   color: #111827;
 }
 
@@ -684,7 +690,7 @@ button {
 .about-section h3 {
   margin: 0 0 8px;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 600;
   color: #111827;
 }
 
@@ -727,7 +733,7 @@ button {
   background: #111827;
   color: #ffffff;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
