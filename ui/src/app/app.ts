@@ -42,6 +42,7 @@ export class App implements OnInit, OnDestroy {
   isDetailsOpen = false;
   isSiteMarkedAsSafe = false;
   isSiteIgnored = false;
+  isAboutOpen = false;
 
   settings: Settings = {
     showDetailsAutomatically: false,
@@ -81,8 +82,6 @@ export class App implements OnInit, OnDestroy {
         this.analysis = analysis;
         this.cdr.detectChanges();
       });
-
-    // this.cdr.detectChanges();
 
     this.isSiteMarkedAsSafe = await this.siteRulesService.isSiteMarkedAsSafe(this.analysis?.domain!);
     this.isSiteIgnored = await this.siteRulesService.isSiteIgnored(this.analysis?.domain!);
@@ -141,96 +140,6 @@ export class App implements OnInit, OnDestroy {
 
     return ICON_CONFIG['neutral'];
   }
-
-  // get riskUi(): RiskUiConfig {
-  //   if (!this.analysis) {
-  //     return {
-  //       title: 'Не проаналізовано',
-  //       message: 'Ми ще не перевірили цей сайт. Даних недостатньо для оцінки.',
-  //       theme: 'neutral',
-  //       icon: 'unknown',
-  //     };
-  //   }
-
-  //   if (
-  //     this.analysis.status === AnalysisStatus.NOT_ANALYZED ||
-  //     this.analysis.status === AnalysisStatus.NOT_APPLICABLE
-  //   ) {
-  //     return {
-  //       title: 'Не проаналізовано',
-  //       message: 'Ми ще не перевірили цей сайт. Даних недостатньо для оцінки.',
-  //       theme: 'neutral',
-  //       icon: 'unknown',
-  //     };
-  //   }
-
-  //   if (this.analysis.status === AnalysisStatus.ERROR) {
-  //     return {
-  //       title: 'Помилка аналізу',
-  //       message:
-
-  //         'Не вдалося виконати перевірку сторінки.',
-  //       theme: 'neutral',
-  //       icon: 'unknown',
-  //     };
-  //   }
-
-  //   switch (this.analysis.riskLevel) {
-  //     case RiskLevel.HIGH:
-  //       return {
-  //         title: 'Високий ризик',
-  //         message:
-  //           'Виявлено кілька підозрілих ознак на цьому сайті.',
-  //         theme: 'high',
-  //         icon: 'warning',
-  //       };
-
-  //     case RiskLevel.MEDIUM:
-  //       return {
-  //         title: 'Середній ризик',
-  //         message:
-
-  //           'Виявлено деякі ознаки, що можуть свідчити про ризики.',
-  //         theme: 'medium',
-  //         icon: 'warning',
-  //       };
-
-  //     case RiskLevel.LOW:
-  //       return {
-  //         title: 'Низький ризик',
-  //         message:
-  //           'Сайт виглядає безпечно. Підозрілих ознак не виявлено.',
-  //         theme: 'low',
-  //         icon: 'check',
-  //       };
-
-  //     default:
-  //       return {
-  //         title: 'Не проаналізовано',
-  //         message: 'Даних недостатньо для оцінки.',
-  //         theme: 'neutral',
-  //         icon: 'unknown',
-  //       };
-  //   }
-  // }
-
-  // get risk(): { label: string, description: string, theme: string, icon: string } {
-  //   if (this.analysis?.status !== AnalysisStatus.ANALYZED) {
-  //     return {
-  //       label: 'Не проаналізовано',
-  //       description: 'Ми ще не перевірили цей сайт.',
-  //       theme: 'neutral',
-  //       icon: 'icons/icon-grey.svg',
-  //     }
-  //   }
-
-  //   return {
-  //     label: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].label,
-  //     description: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].description,
-  //     theme: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].theme,
-  //     icon: RISK_LEVEL_CONFIG[this.analysis?.riskLevel!].icon
-  //   }
-  // }
 
   get riskLabel(): string {
     if (this.isSiteIgnored) {
@@ -508,8 +417,12 @@ export class App implements OnInit, OnDestroy {
 
   openAbout(): void {
     this.closeMenu();
+    this.isAboutOpen = true;
+    this.cdr.detectChanges();
+  }
 
-    // TODO: add about
-    console.log('Open about extension');
+  closeAbout(): void {
+    this.isAboutOpen = false;
+    this.cdr.detectChanges();
   }
 }

@@ -1,4 +1,6 @@
 <div class="popup" [ngClass]="'theme-' + popupTheme">
+  <div class="menu-backdrop" *ngIf="isMenuOpen" (click)="closeMenu()"></div>
+
   <header class="popup-header">
     <div class="brand">
       <img class="logo" [src]="logoSrc" alt="Shopping Guard" />
@@ -12,7 +14,7 @@
       <span></span>
     </button>
 
-    <div class="menu" *ngIf="isMenuOpen">
+    <div class="menu" *ngIf="isMenuOpen" (click)="$event.stopPropagation()">
       <button type="button" class="menu-item" (click)="rerunAnalysis()">
         <span class="menu-icon">↻</span>
         <span>Повторити аналіз</span>
@@ -190,6 +192,57 @@
       </div>
     </section>
   </main>
+
+  <div class="modal-backdrop" *ngIf="isAboutOpen" (click)="closeAbout()">
+    <section class="about-modal" (click)="$event.stopPropagation()">
+      <header class="about-header">
+        <div class="about-brand">
+          <img class="about-logo" [src]="logoSrc" alt="Shopping Guard" />
+
+          <div>
+            <h2>Shopping Guard</h2>
+            <p>Браузерне розширення для аналізу торгових сторінок</p>
+          </div>
+        </div>
+
+        <button type="button" class="about-close" aria-label="Закрити" (click)="closeAbout()">
+          ×
+        </button>
+      </header>
+
+      <div class="about-body">
+        <p>
+          Shopping Guard допомагає попередньо оцінити торгову вебсторінку
+          та звернути увагу на ознаки, які можуть свідчити про підвищений
+          ризик для покупця.
+        </p>
+
+        <div class="about-section">
+          <h3>Що перевіряється</h3>
+
+          <ul>
+            <li>інформація про повернення товару;</li>
+            <li>наявність гарантійних умов;</li>
+            <li>юридичні дані продавця;</li>
+            <li>контактна інформація;</li>
+            <li>особливості форми замовлення;</li>
+            <li>ознаки агресивного маркетингу.</li>
+          </ul>
+        </div>
+
+        <div class="about-note">
+          Оцінка має інформаційний характер і не є остаточним висновком
+          про безпечність або небезпечність сайту.
+        </div>
+      </div>
+
+      <footer class="about-footer">
+        <button type="button" class="about-primary-button" (click)="closeAbout()">
+          Зрозуміло
+        </button>
+      </footer>
+    </section>
+  </div>
 
   <ng-template #loadingTemplate>
     <main class="content">

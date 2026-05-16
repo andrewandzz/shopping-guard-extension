@@ -26,6 +26,7 @@ button {
 
 .popup-header {
   position: relative;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -409,15 +410,22 @@ button {
 
 .menu {
   position: absolute;
-  top: -2px;
-  right: -9px;
-  z-index: 20;
+  top: 48px;
+  right: 0;
+  z-index: 30;
   width: 334px;
   padding: 10px 16px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 11px;
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+}
+
+.menu-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: transparent;
 }
 
 .menu-item {
@@ -580,4 +588,149 @@ button {
 .theme-neutral .summary-text h2,
 .theme-neutral .risk-score {
   color: #666666;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  background: rgba(17, 24, 39, 0.28);
+}
+
+.about-modal {
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100% - 20px);
+  overflow: auto;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+}
+
+.about-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid #eeeeee;
+}
+
+.about-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.about-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.about-header h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #111827;
+}
+
+.about-header p {
+  margin: 0;
+  max-width: 310px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
+.about-close {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #52525b;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.about-close:hover {
+  background: #f3f4f6;
+}
+
+.about-body {
+  padding: 16px 18px 4px;
+}
+
+.about-body p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #3f3f46;
+}
+
+.about-section {
+  margin-top: 16px;
+}
+
+.about-section h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.about-section ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.about-section li {
+  font-size: 14px;
+  line-height: 1.35;
+  color: #3f3f46;
+}
+
+.about-note {
+  margin-top: 16px;
+  padding: 12px 13px;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  color: #52525b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.about-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 18px 18px;
+}
+
+.about-primary-button {
+  min-width: 112px;
+  height: 38px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.about-primary-button:hover {
+  background: #27272a;
 }

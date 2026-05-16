@@ -19,7 +19,7 @@
 }
 
 html,
-body, app-root {
+body {
     margin: 0;
     padding: 0;
     width: 580px;
