@@ -40,7 +40,7 @@ export const PAGE_TYPE_CONFIG: PageTypeConfig = {
 export const CHECK_CONFIG: CheckConfig = {
     return_policy: {
         message: 'Відсутня інформація про повернення товару',
-        icon: 'icons/return_policy.svg',
+        icon: 'keyboard_return',
         label: 'Повернення',
         values: {
             passed: 'знайдено',
@@ -49,7 +49,7 @@ export const CHECK_CONFIG: CheckConfig = {
     },
     warranty: {
         message: 'Немає інформації про гарантію',
-        icon: 'icons/warranty.svg',
+        icon: 'verified_user',
         label: 'Гарантія',
         values: {
             passed: 'знайдено',
@@ -58,7 +58,7 @@ export const CHECK_CONFIG: CheckConfig = {
     },
     contacts: {
         message: 'Відсутня контактна інформація',
-        icon: 'icons/contacts.svg',
+        icon: 'call',
         label: 'Контакти',
         values: {
             passed: 'присутні',
@@ -67,7 +67,7 @@ export const CHECK_CONFIG: CheckConfig = {
     },
     legal_info: {
         message: 'Немає юридичних даних продавця',
-        icon: 'icons/legal_info.svg',
+        icon: 'badge',
         label: 'Юридичні дані',
         values: {
             passed: 'присутні',
@@ -76,7 +76,7 @@ export const CHECK_CONFIG: CheckConfig = {
     },
     aggressive_marketing: {
         message: 'Агресивні маркетингові формулювання',
-        icon: 'icons/aggressive_marketing.svg',
+        icon: 'campaign',
         label: 'Агресивний маркетинг',
         values: {
             passed: "не виявлено",
@@ -85,7 +85,7 @@ export const CHECK_CONFIG: CheckConfig = {
     },
     name_and_phone_only_form: {
         message: 'Форма без інформації про доставку',
-        icon: 'icons/name_and_phone_only_form.svg',
+        icon: 'list_alt',
         label: 'Форма замовлення',
         values: {
             passed: "повна",
@@ -94,7 +94,7 @@ export const CHECK_CONFIG: CheckConfig = {
     },
     domain_zone: {
         message: 'Потенційно підозріла доменна зона',
-        icon: 'icons/domain_zone.svg',
+        icon: 'language',
         label: 'Доменна зона',
         values: {
             passed: "типова",

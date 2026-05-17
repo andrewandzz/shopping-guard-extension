@@ -9,12 +9,10 @@ export class SiteRulesService {
 
   async ignoreSite(domain: string): Promise<void> {
     await this.addRule(domain, 'ignore');
-    console.log(await this.getRules());
   }
 
   async unignoreSite(domain: string): Promise<void> {
     await this.removeRule(domain, 'ignore');
-    console.log(await this.getRules());
   }
 
   async isSiteIgnored(domain: string): Promise<boolean> {
@@ -23,12 +21,10 @@ export class SiteRulesService {
 
   async markSiteAsSafe(domain: string): Promise<void> {
     await this.addRule(domain, 'mark_as_safe');
-    console.log(await this.getRules());
   }
 
   async unmarkSiteAsSafe(domain: string): Promise<void> {
     await this.removeRule(domain, 'mark_as_safe');
-    console.log(await this.getRules());
   }
 
   async isSiteMarkedAsSafe(domain: string): Promise<boolean> {

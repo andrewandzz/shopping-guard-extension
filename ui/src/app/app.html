@@ -9,21 +9,19 @@
     </div>
 
     <button type="button" class="menu-button" aria-label="Відкрити меню" (click)="toggleMenu()">
-      <span></span>
-      <span></span>
-      <span></span>
+      <span class="material-symbols-outlined">more_vert</span>
     </button>
 
     <div class="menu" *ngIf="isMenuOpen" (click)="$event.stopPropagation()">
       <button type="button" class="menu-item" (click)="rerunAnalysis()">
-        <span class="menu-icon">↻</span>
+        <span class="material-symbols-outlined menu-icon">refresh</span>
         <span>Повторити аналіз</span>
       </button>
 
       <div class="menu-divider"></div>
 
       <button type="button" class="menu-item menu-item-with-switch" (click)="toggleShowDetailsAutomatically()">
-        <span class="menu-icon">◉</span>
+        <span class="material-symbols-outlined menu-icon">dashboard_customize</span>
         <span>Показувати деталі автоматично</span>
 
         <span class="switch" [class.switch-active]="settings.showDetailsAutomatically">
@@ -32,28 +30,32 @@
       </button>
 
       <button type="button" class="menu-item" (click)="toggleMarkSiteAsSafe()">
-        <span class="menu-icon">▿</span>
+        <span *ngIf="!isSiteMarkedAsSafe" class="material-symbols-outlined menu-icon">verified_user</span>
         <span *ngIf="!isSiteMarkedAsSafe">Позначити сайт як безпечний</span>
+
+        <span *ngIf="isSiteMarkedAsSafe" class="material-symbols-outlined menu-icon">dangerous</span>
         <span *ngIf="isSiteMarkedAsSafe">Зняти позначку сайту як безпечний</span>
       </button>
 
       <button type="button" class="menu-item" (click)="toggleIgnoreSite()">
-        <span class="menu-icon">⊗</span>
+        <span *ngIf="!isSiteIgnored" class="material-symbols-outlined menu-icon">stop_circle</span>
         <span *ngIf="!isSiteIgnored">Не аналізувати цей сайт</span>
+
+        <span *ngIf="isSiteIgnored" class="material-symbols-outlined menu-icon">play_circle</span>
         <span *ngIf="isSiteIgnored">Аналізувати цей сайт</span>
       </button>
 
       <div class="menu-divider"></div>
 
       <button type="button" class="menu-item" (click)="reportFalsePositive()">
-        <span class="menu-icon">♢</span>
+        <span class="material-symbols-outlined menu-icon">notifications</span>
         <span>Повідомити про помилкове спрацювання</span>
       </button>
 
       <div class="menu-divider"></div>
 
       <button type="button" class="menu-item" (click)="openAbout()">
-        <span class="menu-icon">ⓘ</span>
+        <span class="material-symbols-outlined menu-icon">info</span>
         <span>Про розширення</span>
       </button>
     </div>
@@ -62,9 +64,7 @@
   <main class="content" *ngIf="!isLoading; else loadingTemplate">
     <section class="summary-card">
       <div class="risk-icon">
-        <span *ngIf="analysis?.riskLevel === 'high' || analysis?.riskLevel === 'medium'">!</span>
-        <span *ngIf="analysis?.riskLevel === 'low'">✓</span>
-        <span *ngIf="analysis?.status !== 'analyzed'">-</span>
+        <span class="material-symbols-outlined">{{ riskIcon }}</span>
       </div>
 
       <div class="summary-text">
@@ -90,18 +90,18 @@
 
       <div class="meta-block">
         <div class="meta-item">
-          <div class="meta-icon">▤</div>
+          <span class="material-symbols-outlined meta-icon">description</span>
 
-          <div>
+          <div class="meta-text">
             <strong>Тип сторінки:</strong>
             <span>{{ pageTypeLabel }}</span>
           </div>
         </div>
 
         <div class="meta-item">
-          <div class="meta-icon">♢</div>
+          <span class="material-symbols-outlined meta-icon">shield</span>
 
-          <div>
+          <div class="meta-text">
             <strong>Бали ризику:</strong>
             <span class="risk-score">{{ riskScore }}</span>
           </div>
@@ -112,13 +112,15 @@
     <section class="details" *ngIf="analysis?.status === 'analyzed'">
       <button type="button" class="details-toggle" (click)="toggleDetails()">
         <span>Детальніше</span>
-        <span class="chevron" [class.chevron-open]="isDetailsOpen">⌄</span>
+        <span class="material-symbols-outlined details-chevron">
+          {{ isDetailsOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}
+        </span>
       </button>
 
       <div class="details-content" *ngIf="isDetailsOpen">
         <div class="details-panel">
           <div class="detail-row">
-            <div class="detail-icon">◎</div>
+            <span class="material-symbols-outlined detail-icon">language</span>
 
             <div class="detail-main">
               <div class="detail-title">Домен</div>
@@ -135,7 +137,7 @@
           <div class="detail-divider"></div>
 
           <div class="detail-row">
-            <div class="detail-icon">▤</div>
+            <span class="material-symbols-outlined detail-icon">description</span>
 
             <div class="detail-main">
               <div class="detail-title">Тип сторінки</div>
@@ -152,7 +154,7 @@
           <div class="detail-divider"></div>
 
           <div class="detail-row">
-            <div class="detail-icon">♢</div>
+            <span class="material-symbols-outlined detail-icon">shield</span>
 
             <div class="detail-main">
               <div class="detail-title">Бали ризику</div>
@@ -170,14 +172,19 @@
 
           <div class="checks-block">
             <div class="checks-title">
-              <span class="detail-icon">▤</span>
+              <span class="material-symbols-outlined detail-icon">fact_check</span>
               <span>Деталі перевірок</span>
             </div>
 
             <div class="check-list" *ngIf="checks.length">
               <div class="check-item" *ngFor="let check of checks" [class.check-negative]="check.status === 'failed'"
                 [class.check-positive]="check.status === 'passed'">
-                <span class="check-label">{{ check.label }}</span>
+
+                <span class="check-left">
+                  <span class="material-symbols-outlined check-icon">{{ check.icon }}</span>
+                  <span class="check-label">{{ check.label }}</span>
+                </span>
+
                 <span class="check-value">{{ check.value }}</span>
               </div>
             </div>

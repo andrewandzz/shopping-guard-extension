@@ -17,6 +17,7 @@ import { SettingsService } from './services/settings.service';
 import { SiteRulesService } from './services/site-rules.service';
 import { DomSanitizer } from '@angular/platform-browser';
 import { CHECK_CONFIG, ICON_CONFIG, PAGE_TYPE_CONFIG, RISK_LEVEL_CONFIG } from './config/config';
+import { MatIconModule } from '@angular/material/icon';
 
 // type RiskTheme = 'high' | 'medium' | 'low' | 'neutral';
 
@@ -30,7 +31,7 @@ import { CHECK_CONFIG, ICON_CONFIG, PAGE_TYPE_CONFIG, RISK_LEVEL_CONFIG } from '
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatIconModule],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -72,8 +73,6 @@ export class App implements OnInit, OnDestroy {
     const analysisKey = `analysis_${tab.id}`;
 
     this.analysis = await this.analysisStorage.getAnalysisResult(analysisKey);
-
-    console.log(this.analysis);
 
     this.isLoading = false;
 
@@ -139,6 +138,21 @@ export class App implements OnInit, OnDestroy {
     }
 
     return ICON_CONFIG['neutral'];
+  }
+
+  get riskIcon(): string {
+    switch (this.popupTheme) {
+      case 'danger':
+        return 'close';
+      case 'warning':
+        return 'exclamation';
+      case 'safe':
+        return 'check';
+      case 'neutral':
+        return 'check_indeterminate_small';
+      default:
+        return '';
+    }
   }
 
   get riskLabel(): string {
@@ -257,12 +271,13 @@ export class App implements OnInit, OnDestroy {
     return PAGE_TYPE_CONFIG[this.analysis?.pageType!].description;
   }
 
-  get checks(): { label: string, value: string, status: 'passed' | 'failed', message: string }[] {
+  get checks(): { icon: string, label: string, value: string, status: 'passed' | 'failed', message: string }[] {
     if (!this.analysis || !this.analysis.checks) {
       return [];
     }
 
     return this.analysis.checks.map(check => ({
+      icon: CHECK_CONFIG[check.id].icon,
       label: CHECK_CONFIG[check.id].label,
       value: CHECK_CONFIG[check.id].values[check.status],
       status: check.status,

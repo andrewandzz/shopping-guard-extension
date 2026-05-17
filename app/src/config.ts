@@ -266,7 +266,7 @@ export const CONFIG = {
     },
     badges: {
       highRisk: {
-        text: "!",
+        text: "X",
         color: "#d93025",
       },
       mediumRisk: {

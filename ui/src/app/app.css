@@ -57,7 +57,6 @@ button {
 
 .menu-button {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 42px;
@@ -66,14 +65,14 @@ button {
   padding: 0;
   border: 0;
   background: transparent;
+  color: #3f3f46;
   cursor: pointer;
 }
 
 .menu-button span {
-  width: 5px;
-  height: 5px;
-  background: #3f3f46;
-  border-radius: 999px;
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
 }
 
 .content {
@@ -197,9 +196,33 @@ button {
 }
 
 .meta-icon {
-  font-size: 27px;
+  width: 24px;
+  height: 24px;
+  font-size: 24px;
   line-height: 1;
   color: #3f3f46;
+  flex: 0 0 auto;
+}
+
+.meta-text {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.meta-text strong {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.meta-text span {
+  font-size: 18px;
+  line-height: 1.2;
+  color: #3f3f46;
+}
+
+.meta-text .risk-score {
+  font-weight: 600;
 }
 
 .meta-item strong {
@@ -215,6 +238,10 @@ button {
   font-size: 16px;
   line-height: 1.2;
   color: #3f3f46;
+}
+
+.meta-item .meta-icon {
+  font-size: 24px;
 }
 
 .meta-item .risk-score {
@@ -244,15 +271,22 @@ button {
   cursor: pointer;
 }
 
-.chevron {
-  font-size: 32px;
+.details-chevron {
+  width: 30px;
+  height: 30px;
+  font-size: 30px;
   line-height: 1;
-  transform: translateY(-3px);
-  transition: transform 0.18s ease;
-}
+  vertical-align: middle;
+  color: #3f3f46;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-.chevron-open {
-  transform: translateY(2px) rotate(180deg);
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 500,
+    'GRAD' 0,
+    'opsz' 30;
 }
 
 .details-content {
@@ -327,7 +361,7 @@ button {
 .checks-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 18px;
   margin-bottom: 10px;
   font-size: 16px;
   font-weight: 600;
@@ -338,6 +372,19 @@ button {
   display: grid;
   gap: 8px;
   padding-left: 40px;
+}
+
+.check-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.check-icon {
+  width: 22px;
+  height: 22px;
+  font-size: 22px;
+  color: #3f3f46;
 }
 
 .check-item {
