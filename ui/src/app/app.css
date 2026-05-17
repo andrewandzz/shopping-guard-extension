@@ -16,12 +16,10 @@ button {
   position: relative;
   width: 580px;
   min-height: 456px;
-  max-height: 600px;
   padding: 28px 21px 18px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  /* overflow: hidden; */
 }
 
 .popup-header {
