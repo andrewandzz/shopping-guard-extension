@@ -31,9 +31,9 @@ export const PAGE_TYPE_CONFIG: PageTypeConfig = {
         label: 'звичайна сторінка продажу',
         description: 'Сторінка схожа на звичайний магазин або каталог товарів.',
     },
-    [PageType.UNKNOWN_PRODUCT_PAGE]: { // TODO: rename
-        label: 'landing page',
-        description: 'Односторінковий сайт без додаткових розділів.',
+    [PageType.SUSPICIOUS_SHOP_PAGE]: {
+        label: 'підозріла сторінка продажу',
+        description: 'Сторінка схожа на підозрілий сайт без додаткових розділів.',
     },
 };
 

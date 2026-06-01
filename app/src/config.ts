@@ -112,32 +112,6 @@ export const CONFIG = {
     high: 7,
   },
 
-  // riskScores: {
-  //   noReturnPolicy: 2,
-  //   noWarranty: 2,
-  //   noContacts: 2,
-  //   aggressiveMarketing: 1,
-  //   // fakeReviews: 1,
-  //   nameAndPhoneOnlyForm: 2,
-  //   noLegalInfo: 2,
-  //   // suspiciousPrice: 1,
-  //   // onePageStructure: 1,
-  //   nonTrustedDomainZone: 1,
-  //   suspiciousDomainZone: 1,
-  // },
-
-  //   suspiciousPrice: {
-  //     maxLowPrice: 299,
-  //   },
-
-  //   reviewCheck: {
-  //     minReviewWords: 4,
-  //   },
-
-  // analysis: {
-
-  // },
-
   checks: {
     returnPolicy: {
       riskScore: 2,
@@ -208,51 +182,6 @@ export const CONFIG = {
         positive: "типова",
         negative: "підозріла"
       }
-    },
-  },
-
-  // messages: {
-  //   noReturnPolicy: "Не знайдено інформацію про повернення або обмін товару.",
-  //   noWarranty: "Не знайдено інформацію про гарантію.",
-  //   noContacts: "Не знайдено контактної інформації продавця.",
-  //   aggressiveMarketing: "Виявлено ознаки агресивної реклами.",
-  //   // fakeReviews:
-  //   //   "На сторінці виявлено багато типових слів із відгуків. Можлива наявність шаблонних або фейкових відгуків.",
-  //   nameAndPhoneOnlyForm:
-  //     "У формі замовлення не знайдено полів для введення адреси або даних про доставку.",
-  //   noLegalInfo: "Не знайдено юридичної інформації про продавця.",
-  //   // suspiciousPrice:
-  //   //   "Виявлено ознаки підозріло низької ціни разом з акційними формулюваннями.",
-  //   // onePageStructure:
-  //   //   "Сторінка схожа на односторінковий продаючий сайт без повноцінної структури інтернет-магазину.",
-  //   suspiciousDomainZone:
-  //     "Домен сайту має нетипову або потенційно підозрілу доменну зону.",
-  //   notProductPage: "Сторінка не схожа на сторінку продажу товару.",
-  //   normalShopPage:
-  //     "Сторінка схожа на звичайний інтернет-магазин або маркетплейс.",
-  // },
-
-  ui: {
-    popupTitle: "Shopping Guard",
-    riskLevelLabel: "Рівень ризику",
-    riskScoreLabel: "Бали ризику",
-    pageTypeLabel: "Тип сторінки",
-    signalsTitle: "Виявлені ознаки",
-    noAnalysisYet: "Результат аналізу поки що недоступний.",
-    noRiskSignals: "Підозрілих ознак не виявлено.",
-    riskLevelPending: "аналіз ще не виконано",
-    valueUnavailable: "—",
-    riskLevels: {
-      high: "високий",
-      medium: "середній",
-      low: "низький",
-      not_analyzed: "не аналізувався",
-    },
-    pageTypes: {
-      not_product_page: "не товарна сторінка",
-      normal_shop_page: "звичайний інтернет-магазин",
-      // quick_order_landing: "landing page зі швидким замовленням",
-      unknown_product_page: "невизначена товарна сторінка",
     },
   },
 

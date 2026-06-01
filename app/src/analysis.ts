@@ -104,53 +104,41 @@ function checkLegalInfo(text: string): AnalysisCheck {
  * Checks whether the page forms require not only name and phone data but also delivery info.
  */
 function checkFormsRequireDeliveryInfo(formsData: FormData[]): AnalysisCheck {
-  const formsContent = formsData
-    .map((formData) => Object.values(formData).flat().join(" ").toLowerCase())
-    .join("\n---\n");
+  if (!formsData || formsData.length === 0) {
+    return {
+      id: 'name_and_phone_only_form',
+      status: 'passed',
+      riskScore: CONFIG.checks.nameAndPhoneOnlyForm.riskScore,
+    };
+  }
 
-  const hasNameField = CONFIG.keywords.form.name.some((keyword) =>
-    formsContent.includes(keyword),
-  );
-  const hasPhoneField = CONFIG.keywords.form.phone.some((keyword) =>
-    formsContent.includes(keyword),
-  );
-  const hasDeliveryField = CONFIG.keywords.form.delivery.some((keyword) =>
-    formsContent.includes(keyword),
-  );
+  const hasSuspiciousForm = formsData.some((formData) => {
+    const formContent = Object.values(formData)
+      .flat()
+      .join(' ')
+      .toLowerCase();
+
+    const hasNameField = CONFIG.keywords.form.name.some((keyword) =>
+      formContent.includes(keyword),
+    );
+
+    const hasPhoneField = CONFIG.keywords.form.phone.some((keyword) =>
+      formContent.includes(keyword),
+    );
+
+    const hasDeliveryField = CONFIG.keywords.form.delivery.some((keyword) =>
+      formContent.includes(keyword),
+    );
+
+    return hasNameField && hasPhoneField && !hasDeliveryField;
+  });
 
   return {
     id: 'name_and_phone_only_form',
-    status: hasNameField && hasPhoneField && hasDeliveryField ? 'passed' : 'failed',
-    riskScore: CONFIG.checks.nameAndPhoneOnlyForm.riskScore
-  }
+    status: hasSuspiciousForm ? 'failed' : 'passed',
+    riskScore: CONFIG.checks.nameAndPhoneOnlyForm.riskScore,
+  };
 }
-
-// function checkOnePageStructure(text) {
-//   const lowerText = text.toLowerCase();
-
-//   const hasLandingStructure =
-//     lowerText.includes("замовити") &&
-//     lowerText.includes("акція") &&
-//     lowerText.includes("відгуки");
-
-//   const hasNormalSiteSections =
-//     lowerText.includes("каталог") ||
-//     lowerText.includes("про нас") ||
-//     lowerText.includes("блог") ||
-//     lowerText.includes("особистий кабінет") ||
-//     lowerText.includes("кошик");
-
-//   if (hasLandingStructure && !hasNormalSiteSections) {
-//     return {
-//       found: true,
-//       score: 1,
-//       message:
-//         "Сторінка схожа на односторінковий продаючий сайт без повноцінної структури інтернет-магазину.",
-//     };
-//   }
-
-//   return null;
-// }
 
 function checkDomain(url: string): AnalysisCheck {
   const hostname = new URL(url).hostname.toLowerCase();
@@ -170,97 +158,212 @@ function checkDomain(url: string): AnalysisCheck {
   }
 }
 
-function detectPageType(text: string, url: string): PageType {
+function detectPageType(urlStr: string, text: string, formsData: FormData[]): PageType {
+  const url = new URL(urlStr);
+  const hostname = url.hostname.replace(/^www\./, '');
+  const pathname = url.pathname.toLowerCase();
   const textLower = text.toLowerCase();
-  const urlLower = url.toLowerCase();
 
-  const hasProductIntent = CONFIG.keywords.pageType.product.some((word) =>
-    textLower.includes(word),
-  );
-
-  const hasNormalShopStructure = CONFIG.keywords.pageType.normalShop.some(
-    (word) => textLower.includes(word),
-  );
-
-  const isCheckoutPage =
-    ["checkout", "cart", "order"].some((word) => urlLower.includes(word)) ||
-    CONFIG.keywords.pageType.checkout.some((word) => textLower.includes(word));
-
-  // const hasQuickOrderForm = formsData.some((formData) => {
-  //   const formText = formData.searchText.toLowerCase();
-
-  //   return (
-  //     formText.includes("телефон") &&
-  //     (formText.includes("ім'я") || formText.includes("ім’я")) &&
-  //     (formText.includes("замовити") || formText.includes("купити"))
-  //   );
-  // });
-
-  if (!hasProductIntent) {
+  if (isExcludedPlatform(hostname, pathname)) {
+    console.log('is excluded platform');
     return PageType.NOT_PRODUCT_PAGE;
   }
 
-  if (hasNormalShopStructure && /*!hasQuickOrderForm &&*/ !isCheckoutPage) {
+  if (isSearchResultsPage(hostname, pathname, url.search)) {
+    console.log('isSearchResultsPage');
+    return PageType.NOT_PRODUCT_PAGE;
+  }
+
+  if (isVideoOrContentPlatform(hostname)) {
+    console.log('isVideoOrContentPlatform');
+    return PageType.NOT_PRODUCT_PAGE;
+  }
+
+  if (hasStrongProductPageSignals(textLower, formsData)) {
+    console.log('hasStrongProductPageSignals');
+    return PageType.SUSPICIOUS_SHOP_PAGE;
+  }
+
+  if (hasWeakProductWords(textLower)) {
+    console.log('hasWeakProductWords');
     return PageType.NORMAL_SHOP_PAGE;
   }
 
-  // if (hasQuickOrderForm) {
-  //   return "quick_order_landing";
-  // }
+  console.log('default');
+  return PageType.NOT_PRODUCT_PAGE;
+}
 
-  return PageType.UNKNOWN_PRODUCT_PAGE;
+function isExcludedPlatform(hostname: string, pathname: string): boolean {
+  const excludedDomains = [
+    'google.com',
+    'google.com.ua',
+    'youtube.com',
+    'youtu.be',
+    'facebook.com',
+    'instagram.com',
+    'tiktok.com',
+    'x.com',
+    'twitter.com',
+    'wikipedia.org',
+    'github.com'
+  ];
+
+  return excludedDomains.some(domain => hostname === domain || hostname.endsWith(`.${domain}`));
+}
+
+function isSearchResultsPage(hostname: string, pathname: string, search: string): boolean {
+  const searchEngines = [
+    'google.com',
+    'google.com.ua',
+    'bing.com',
+    'duckduckgo.com',
+    'yahoo.com'
+  ];
+
+  const isSearchEngine = searchEngines.some(domain =>
+    hostname === domain || hostname.endsWith(`.${domain}`)
+  );
+
+  if (!isSearchEngine) {
+    return false;
+  }
+
+  return (
+    pathname.includes('/search') ||
+    search.includes('q=') ||
+    search.includes('query=') ||
+    search.includes('p=')
+  );
+}
+
+function isVideoOrContentPlatform(hostname: string): boolean {
+  const contentPlatforms = [
+    'youtube.com',
+    'youtu.be',
+    'tiktok.com',
+    'instagram.com',
+    'facebook.com'
+  ];
+
+  return contentPlatforms.some(domain =>
+    hostname === domain || hostname.endsWith(`.${domain}`)
+  );
+}
+
+function hasStrongProductPageSignals(textLower: string, formsData: FormData[]): boolean {
+  // const text = text.toLowerCase();
+
+  console.log(textLower);
+
+  const hasPrice = /\d+[\s.,]?\d*\s*(грн|₴|uah|usd|\$|eur|€)/i.test(textLower);
+
+  console.log('hasPrice' + hasPrice);
+
+  const hasBuyButton = formsData.some(form => {
+    const buttonsText = form.buttons.join(' ').toLowerCase();
+
+    return (
+      buttonsText.includes('купити') ||
+      buttonsText.includes('замовити') ||
+      buttonsText.includes('додати в кошик') ||
+      buttonsText.includes('оформити замовлення') ||
+      buttonsText.includes('buy') ||
+      buttonsText.includes('order') ||
+      buttonsText.includes('add to cart')
+    );
+  });
+
+  console.log('hasBuyButton' + hasBuyButton);
+
+  const hasOrderForm = formsData.some(form => {
+    const formText = [
+      form.text,
+      ...form.labels,
+      ...form.names,
+      ...form.ids,
+      ...form.buttons
+    ].join(' ').toLowerCase();
+
+    const hasNameField =
+      formText.includes('імʼя') ||
+      formText.includes("ім'я") ||
+      formText.includes('name');
+
+    const hasPhoneField =
+      formText.includes('телефон') ||
+      formText.includes('phone') ||
+      formText.includes('номер');
+
+    const hasOrderAction =
+      formText.includes('замовити') ||
+      formText.includes('купити') ||
+      formText.includes('order');
+
+    return hasNameField && hasPhoneField && hasOrderAction;
+  });
+
+  console.log('hasOrderForm' + hasOrderForm);
+
+  const hasDeliveryOrPayment =
+    textLower.includes('доставка') ||
+    textLower.includes('оплата') ||
+    textLower.includes('накладений платіж') ||
+    textLower.includes('payment') ||
+    textLower.includes('delivery');
+
+  console.log('hasDeliveryOrPayment' + hasDeliveryOrPayment);
+
+  return (
+    hasPrice && hasBuyButton ||
+    hasOrderForm ||
+    hasPrice && hasDeliveryOrPayment
+  );
+}
+
+function hasWeakProductWords(text: string): boolean {
+  const hasPrice = /\d+[\s.,]?\d*\s*(грн|₴|uah|usd|\$|eur|€)/i.test(text);
+
+  const productWords = [
+    'купити',
+    'замовити',
+    'доставка',
+    'оплата',
+    'товар',
+    'кошик',
+    'гарантія'
+  ];
+
+  const matchedCount = productWords.filter(word => text.includes(word)).length;
+
+  return hasPrice && matchedCount >= 2;
 }
 
 export function analyzePageData(pageData: PageData): AnalysisResult {
-  const pageType = detectPageType(pageData.text, pageData.url);
+  const pageType = detectPageType(pageData.url, pageData.text, pageData.formsData);
 
   if (pageType === PageType.NOT_PRODUCT_PAGE) {
     return {
       status: AnalysisStatus.NOT_APPLICABLE,
       pageType,
-      // url: pageData.url,
-      domain: new URL(pageData.url).hostname,
-      checks: [],
-    };
-  }
-
-  if (pageType === PageType.NORMAL_SHOP_PAGE) {
-    return {
-      status: AnalysisStatus.ANALYZED,
-      pageType,
-      // url: pageData.url,
-      domain: new URL(pageData.url).hostname,
       riskLevel: RiskLevel.LOW,
-      totalScore: 1, // TODO: fix?
+      totalScore: 0,
+      domain: new URL(pageData.url).hostname,
       checks: [],
-      analyzedAt: new Date().toISOString(),
     };
   }
 
-  const checks: AnalysisCheck[] = [
+  const allChecks: AnalysisCheck[] = [
     checkReturnPolicy(pageData.text),
     checkWarranty(pageData.text),
     checkContacts(pageData.text),
     checkAggressiveMarketing(pageData.text),
     checkLegalInfo(pageData.text),
-    // checkReviews(pageData.text),
-    // checkPrice(pageData.text),
     checkFormsRequireDeliveryInfo(pageData.formsData),
     checkDomain(pageData.url),
-    // TODO: check cart
   ];
 
-  const riskSignals = checks.filter((result) => result.status === 'failed');
-
-  const totalScore = riskSignals.reduce((sum, signal) => sum + signal.riskScore!, 0);
-
-  let riskLevel = RiskLevel.LOW;
-
-  if (totalScore >= CONFIG.riskThresholds.high) {
-    riskLevel = RiskLevel.HIGH;
-  } else if (totalScore >= CONFIG.riskThresholds.medium) {
-    riskLevel = RiskLevel.MEDIUM;
-  }
+  const totalScore = calculateTotalScore(allChecks);
+  const riskLevel = calculateRiskLevel(totalScore);
 
   return {
     status: AnalysisStatus.ANALYZED,
@@ -268,10 +371,38 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
     totalScore,
     pageType,
     analyzedAt: new Date().toISOString(),
-    // url: pageData.url,
     domain: new URL(pageData.url).hostname,
-    checks: checks,
+    checks: allChecks,
   };
 
   // TODO: add ERROR status for errors
+}
+
+function calculateTotalScore(checks: AnalysisCheck[]): number {
+  const failedScore = checks
+    .filter((check) => check.status === 'failed')
+    .reduce((sum, check) => sum + check.riskScore, 0);
+
+  const maxPossibleScore = checks
+    .reduce((sum, check) => sum + check.riskScore, 0);
+
+  if (maxPossibleScore === 0) {
+    return 0;
+  }
+
+  const normalizedScore = (failedScore / maxPossibleScore) * 10;
+
+  return Math.round(normalizedScore);
+}
+
+function calculateRiskLevel(totalScore: number) {
+  if (totalScore >= CONFIG.riskThresholds.high) {
+    return RiskLevel.HIGH;
+  }
+
+  if (totalScore >= CONFIG.riskThresholds.medium) {
+    return RiskLevel.MEDIUM;
+  }
+
+  return RiskLevel.LOW;
 }

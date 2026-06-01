@@ -3,17 +3,16 @@ import { AnalysisStatus } from "./analysis-status.model";
 import { PageType } from "./page-type.model";
 
 export type RiskLevel =
-    | 'low'
-    | 'medium'
-    | 'high';
+  | 'low'
+  | 'medium'
+  | 'high';
 
 export interface AnalysisResult {
-    status: AnalysisStatus;
-    domain: string;
-    // url: string;
-    pageType?: PageType;
-    checks?: AnalysisCheck[];
-    riskLevel?: RiskLevel;
-    totalScore?: number;
-    analyzedAt?: string;
+  status: AnalysisStatus;
+  domain: string;
+  pageType?: PageType;
+  checks?: AnalysisCheck[];
+  riskLevel?: RiskLevel;
+  totalScore?: number;
+  analyzedAt?: string;
 }

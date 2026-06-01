@@ -14,5 +14,5 @@ export type AnalysisCheckStatus =
 export interface AnalysisCheck {
   id: AnalysisCheckId,
   status: AnalysisCheckStatus;
-  riskScore?: number;
+  riskScore: number;
 }
