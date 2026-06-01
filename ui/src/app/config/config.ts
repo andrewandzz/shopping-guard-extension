@@ -1,132 +1,145 @@
 import { AnalysisCheckId, AnalysisCheckStatus } from "../models/analysis-check.model";
 import { RiskLevel } from "../models/analysis-result.model";
-import { AnalysisStatus } from "../models/analysis-status.model";
 import { PageType } from "../models/page-type.model";
 
 type CheckConfig = Record<AnalysisCheckId, {
-    message: string,
-    icon: string,
-    label: string,
-    values: Record<AnalysisCheckStatus, string>
+  message: string,
+  icon: string,
+  label: string,
+  values: Record<AnalysisCheckStatus, string>
 }>;
 
 type PageTypeConfig = Record<PageType, {
-    label: string,
-    description: string
+  label: string,
+  description: string
 }>;
 
 type RiskLevelConfig = Record<RiskLevel, {
-    label: string,
-    description: string,
-    theme: string,
-    icon: string,
+  label: string,
+  description: string,
+  theme: string,
+  icon: string,
 }>;
 
 export const PAGE_TYPE_CONFIG: PageTypeConfig = {
-    [PageType.NOT_PRODUCT_PAGE]: {
-        label: 'не сторінка продажу',
-        description: 'Сторінка не містить достатніх ознак продажу товару.',
-    },
-    [PageType.NORMAL_SHOP_PAGE]: {
-        label: 'звичайна сторінка продажу',
-        description: 'Сторінка схожа на звичайний магазин або каталог товарів.',
-    },
-    [PageType.SUSPICIOUS_SHOP_PAGE]: {
-        label: 'підозріла сторінка продажу',
-        description: 'Сторінка схожа на підозрілий сайт без додаткових розділів.',
-    },
+  [PageType.NOT_PRODUCT_PAGE]: {
+    label: 'не сторінка продажу',
+    description: 'Сторінка не містить достатніх ознак продажу товару.',
+  },
+  [PageType.PRODUCT_PAGE]: {
+    label: 'сторінка продажу',
+    description: 'Сторінка схожа на торгову, з потенційним ризиком.',
+  },
 };
 
 export const CHECK_CONFIG: CheckConfig = {
-    return_policy: {
-        message: 'Відсутня інформація про повернення товару',
-        icon: 'keyboard_return',
-        label: 'Повернення',
-        values: {
-            passed: 'знайдено',
-            failed: 'не знайдено'
-        },
+  return_policy: {
+    message: 'Відсутня інформація про повернення товару',
+    icon: 'keyboard_return',
+    label: 'Повернення',
+    values: {
+      passed: 'знайдено',
+      failed: 'не знайдено'
     },
-    warranty: {
-        message: 'Немає інформації про гарантію',
-        icon: 'verified_user',
-        label: 'Гарантія',
-        values: {
-            passed: 'знайдено',
-            failed: 'не знайдено'
-        }
-    },
-    contacts: {
-        message: 'Відсутня контактна інформація',
-        icon: 'call',
-        label: 'Контакти',
-        values: {
-            passed: 'присутні',
-            failed: 'відсутні'
-        }
-    },
-    legal_info: {
-        message: 'Немає юридичних даних продавця',
-        icon: 'badge',
-        label: 'Юридичні дані',
-        values: {
-            passed: 'присутні',
-            failed: 'відсутні'
-        }
-    },
-    aggressive_marketing: {
-        message: 'Агресивні маркетингові формулювання',
-        icon: 'campaign',
-        label: 'Агресивний маркетинг',
-        values: {
-            passed: "не виявлено",
-            failed: "виявлено"
-        }
-    },
-    name_and_phone_only_form: {
-        message: 'Форма без інформації про доставку',
-        icon: 'list_alt',
-        label: 'Форма замовлення',
-        values: {
-            passed: "повна",
-            failed: "лише ім'я та телефон"
-        }
-    },
-    domain_zone: {
-        message: 'Потенційно підозріла доменна зона',
-        icon: 'language',
-        label: 'Доменна зона',
-        values: {
-            passed: "типова",
-            failed: "підозріла"
-        }
+  },
+  warranty: {
+    message: 'Немає інформації про гарантію',
+    icon: 'verified_user',
+    label: 'Гарантія',
+    values: {
+      passed: 'знайдено',
+      failed: 'не знайдено'
     }
+  },
+  contacts: {
+    message: 'Відсутня контактна інформація',
+    icon: 'call',
+    label: 'Контакти',
+    values: {
+      passed: 'присутні',
+      failed: 'відсутні'
+    }
+  },
+  legal_info: {
+    message: 'Немає юридичних даних продавця',
+    icon: 'badge',
+    label: 'Юридичні дані',
+    values: {
+      passed: 'присутні',
+      failed: 'відсутні'
+    }
+  },
+  aggressive_marketing: {
+    message: 'Агресивні маркетингові формулювання',
+    icon: 'campaign',
+    label: 'Агресивний маркетинг',
+    values: {
+      passed: "не виявлено",
+      failed: "виявлено"
+    }
+  },
+  name_and_phone_only_form: {
+    message: 'Форма без інформації про доставку',
+    icon: 'list_alt',
+    label: 'Форма замовлення',
+    values: {
+      passed: "повна",
+      failed: "лише ім'я та телефон"
+    }
+  },
+  domain_zone: {
+    message: 'Потенційно підозріла доменна зона',
+    icon: 'language',
+    label: 'Доменна зона',
+    values: {
+      passed: "типова",
+      failed: "підозріла"
+    }
+  },
+  reviews: {
+    message: 'Потенційно шаблонні відгуки',
+    icon: 'star_half',
+    label: 'Шаблонні відгуки',
+    values: {
+      passed: "не виявлено",
+      failed: "виявлено"
+    }
+  },
+  discount: {
+    message: 'Підозріло велика знижка',
+    icon: 'percent',
+    label: 'Велика знижка',
+    values: {
+      passed: "не виявлено",
+      failed: "виявлено"
+    }
+  }
 };
 
 export const RISK_LEVEL_CONFIG: RiskLevelConfig = {
-    high: {
-        label: 'Високий ризик',
-        description: 'Виявлено кілька підозрілих ознак на цьому сайті.',
-        theme: 'danger',
-        icon: 'icons/icon-red.svg',
-    },
-    medium: {
-        label: 'Середній ризик',
-        description: 'Виявлено деякі ознаки, що можуть свідчити про ризики.',
-        theme: 'warning',
-        icon: 'icons/icon-amber.svg',
-    },
-    low: {
-        label: 'Низький ризик',
-        description: 'Сайт виглядає достатньо безпечно.',
-        theme: 'safe',
-        icon: 'icons/icon-green.svg',
-    },
+  high: {
+    label: 'Високий ризик',
+    description: 'Виявлено кілька підозрілих ознак на цьому сайті.',
+    theme: 'danger',
+    icon: 'icons/icon-red.svg',
+  },
+  medium: {
+    label: 'Середній ризик',
+    description: 'Виявлено деякі ознаки, що можуть свідчити про ризики.',
+    theme: 'warning',
+    icon: 'icons/icon-amber.svg',
+  },
+  low: {
+    label: 'Низький ризик',
+    description: 'Сайт виглядає достатньо безпечно.',
+    theme: 'safe',
+    icon: 'icons/icon-green.svg',
+  },
 };
 
 export const ICON_CONFIG: Record<'danger' | 'warning' | 'safe' | 'neutral', string> = {
-    danger: 'icons/icon-red.svg',
-    warning: 'icons/icon-amber.svg',
-    safe: 'icons/icon-green.svg',
-    neutral: 'icons/icon-grey.svg'
+  danger: 'icons/icon-red.svg',
+  warning: 'icons/icon-amber.svg',
+  safe: 'icons/icon-green.svg',
+  neutral: 'icons/icon-grey.svg'
 };

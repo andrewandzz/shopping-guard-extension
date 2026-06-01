@@ -5,7 +5,9 @@ export type AnalysisCheckId =
   | 'legal_info'
   | 'aggressive_marketing'
   | 'name_and_phone_only_form'
-  | 'domain_zone';
+  | 'domain_zone'
+  | 'reviews'
+  | 'discount';
 
 export type AnalysisCheckStatus =
   | 'passed'

@@ -20,14 +20,30 @@ export const CONFIG = {
         "e-mail"]
     },
     discount: {
-      substrings: [
-        "стара ціна",
-        "нова ціна",
-        "ціна сьогодні",
-        "знижк",
-        "акці",
-        "розпродаж",
-      ],
+      oldPrice: {
+        substrings: [
+          'old',
+          'regular',
+          'original',
+          'before',
+          'стара',
+          'звичайна',
+          'без знижки',
+          'перекреслена',
+        ]
+      },
+      newPrice: {
+        substrings: [
+          'new',
+          'sale',
+          'current',
+          'special',
+          'нова',
+          'акційна',
+          'зі знижкою',
+          'сьогодні'
+        ]
+      }
     },
     legal: {
       substrings: [
@@ -66,14 +82,26 @@ export const CONFIG = {
     review: {
       substrings: [
         "реальний покупець",
+        "перевірений покупець",
         "дуже задоволена",
         "дуже задоволений",
+        "рекомендую всім",
+        "замовляю вже не перший раз",
+        "доставка швидка",
+        "якість супер",
+        "товар прийшов",
         "відгук",
         "рекомендую",
         "замовляла",
         "замовляв",
         "отримала",
         "отримав",
+        "задоволен",
+        "сподобал",
+      ],
+      wholeWords: [
+        "reviews",
+        "review",
       ],
     },
     warranty: {
@@ -218,7 +246,6 @@ export const CONFIG = {
       riskScore: 2,
       message: "Відсутня інформація про повернення товару",
       label: "Повернення",
-      icon: "",
       statuses: {
         positive: "знайдено",
         negative: "не знайдено"
@@ -228,7 +255,6 @@ export const CONFIG = {
       riskScore: 2,
       message: "Немає інформації про гарантію",
       label: "Гарантія",
-      icon: "",
       statuses: {
         positive: "знайдено",
         negative: "не знайдено"
@@ -238,7 +264,6 @@ export const CONFIG = {
       riskScore: 2,
       message: "Відсутня контактна інформація",
       label: "Контакти",
-      icon: "",
       statuses: {
         positive: "присутні",
         negative: "відсутні"
@@ -248,7 +273,6 @@ export const CONFIG = {
       riskScore: 2,
       message: "Немає юридичних даних продавця",
       label: "Юридичні дані",
-      icon: "",
       statuses: {
         positive: "присутні",
         negative: "відсутні"
@@ -258,7 +282,6 @@ export const CONFIG = {
       riskScore: 1,
       message: "Агресивні маркетингові формулювання",
       label: "Агресивний маркетинг",
-      icon: "",
       statuses: {
         positive: "не виявлено",
         negative: "виявлено"
@@ -268,17 +291,33 @@ export const CONFIG = {
       riskScore: 2,
       message: "Форма без інформації про доставку",
       label: "Форма замовлення",
-      icon: "",
       statuses: {
         positive: "повна",
         negative: "лише ім'я та телефон"
+      }
+    },
+    reviews: {
+      riskScore: 1,
+      message: "Потенційно шаблонні відгуки",
+      label: "Шаблонні відгуки",
+      statuses: {
+        positive: "не виявлено",
+        negative: "виявлено"
+      }
+    },
+    discount: {
+      riskScore: 2,
+      message: "Підозріло велика знижка",
+      label: "Велика знижка",
+      statuses: {
+        positive: "не виявлено",
+        negative: "виявлено"
       }
     },
     domainZone: {
       riskScore: 2,
       message: "Потенційно підозріла доменна зона",
       label: "Доменна зона",
-      icon: "",
       statuses: {
         positive: "типова",
         negative: "підозріла"

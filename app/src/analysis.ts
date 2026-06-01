@@ -5,6 +5,7 @@ import { AnalysisStatus } from "./models/analysis-status.model";
 import { FormData } from "./models/form-data.model";
 import { PageData } from "./models/page-data.model";
 import { PageType } from "./models/page-type.model";
+import { PriceData } from "./models/price-data.model";
 import { RiskLevel } from "./models/risk-level.model";
 
 /**
@@ -112,6 +113,9 @@ function checkFormsRequireDeliveryInfo(formsData: FormData[]): AnalysisCheck {
   };
 }
 
+/**
+ * Checks whether the website has a suspicious domain zone.
+ */
 function checkDomain(url: string): AnalysisCheck {
   const hostname = new URL(url).hostname.toLowerCase();
 
@@ -126,6 +130,150 @@ function checkDomain(url: string): AnalysisCheck {
   };
 }
 
+/**
+ * Checks whether the page text contains potentially fake reviews.
+ */
+function checkFakeReviews(text: string): AnalysisCheck {
+  const textLower = text.toLowerCase();
+
+  const reviewKeywords = CONFIG.keywords.review;
+
+  const positiveReviewPhrasesCount = reviewKeywords.substrings.filter((keyword) => textLower.includes(keyword)).length;
+
+  const hasReviewSection =
+    textLower.includes('відгуки') ||
+    textLower.includes('відгук') ||
+    textLower.includes('reviews') ||
+    textLower.includes('review');
+
+  const hasManyFiveStars =
+    (textLower.match(/5\s*\/\s*5/g) || []).length >= 3 ||
+    (textLower.match(/★★★★★/g) || []).length >= 3;
+
+  const hasSuspiciousReviewPattern =
+    hasReviewSection &&
+    positiveReviewPhrasesCount >= 5 &&
+    hasManyFiveStars;
+
+  return {
+    id: 'reviews',
+    status: hasSuspiciousReviewPattern ? 'failed' : 'passed',
+    riskScore: CONFIG.checks.reviews.riskScore,
+  };
+}
+
+/**
+ * Checks whether the page text or prices data contains suspiciously big discount.
+ */
+function checkSuspiciousDiscount(text: string, pricesData: PriceData[]): AnalysisCheck {
+  const textLower = text.toLowerCase();
+
+  const hasStructuredSuspiciousPriceDrop = hasSuspiciousPriceDrop(pricesData);
+  const hasTextSuspiciousPriceDrop = hasNearbySuspiciousPriceDrop(textLower);
+
+  const hasSuspiciousDiscount =
+    hasStructuredSuspiciousPriceDrop || hasTextSuspiciousPriceDrop;
+
+  return {
+    id: 'discount',
+    status: hasSuspiciousDiscount ? 'failed' : 'passed',
+    riskScore: CONFIG.checks.discount.riskScore,
+  };
+}
+
+function hasSuspiciousPriceDrop(pricesData: PriceData[]): boolean {
+  const oldPrices = pricesData.filter((price) => price.value !== null && isOldPrice(price));
+  const newPrices = pricesData.filter((price) => price.value !== null && isNewPrice(price));
+
+  const suspiciousDiscountThreshold = 40;
+
+  for (const oldPrice of oldPrices) {
+    for (const newPrice of newPrices) {
+      if (!oldPrice.value || !newPrice.value) {
+        continue;
+      }
+
+      if (oldPrice.value <= newPrice.value) {
+        continue;
+      }
+
+      const discountPercent =
+        ((oldPrice.value - newPrice.value) / oldPrice.value) * 100;
+
+      if (discountPercent >= suspiciousDiscountThreshold) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function isOldPrice(price: PriceData): boolean {
+  const markerText = `${price.className} ${price.id} ${price.nearbyText}`.toLowerCase();
+  const hasOldPriceMarker = hasAnyKeywordGroup(markerText, CONFIG.keywords.discount.oldPrice);
+  return hasOldPriceMarker;
+}
+
+function isNewPrice(price: PriceData): boolean {
+  const markerText = `${price.className} ${price.id} ${price.nearbyText}`.toLowerCase();
+  const hasNewPriceMarker = hasAnyKeywordGroup(markerText, CONFIG.keywords.discount.newPrice);
+  return hasNewPriceMarker;
+}
+
+function hasNearbySuspiciousPriceDrop(text: string): boolean {
+  const prices = extractPricesFromText(text);
+
+  const maxDistanceBetweenPrices = 20;
+  const suspiciousDiscountThreshold = 40;
+
+  for (let i = 0; i < prices.length - 1; i++) {
+    const firstPrice = prices[i];
+    const secondPrice = prices[i + 1];
+
+    if (firstPrice.currency !== secondPrice.currency) {
+      continue;
+    }
+
+    const distance = secondPrice.index - firstPrice.index;
+
+    if (distance > maxDistanceBetweenPrices) {
+      continue;
+    }
+
+    const oldPrice = Math.max(firstPrice.value, secondPrice.value);
+    const newPrice = Math.min(firstPrice.value, secondPrice.value);
+
+    const discountPercent = ((oldPrice - newPrice) / oldPrice) * 100;
+
+    if (discountPercent >= suspiciousDiscountThreshold) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function extractPricesFromText(text: string): { value: number; index: number; currency: string }[] {
+  const priceRegex = /(\d[\d\s.,]*)\s*(грн|₴|uah|usd|\$|eur|€)/gi;
+
+  return Array.from(text.matchAll(priceRegex))
+    .map((match) => {
+      const value = Number(
+        match[1]
+          .replace(/\s/g, '')
+          .replace(',', '.'),
+      );
+
+      return {
+        value,
+        index: match.index ?? 0,
+        currency: match[2].toLowerCase(),
+      };
+    })
+    .filter((price) => !Number.isNaN(price.value) && price.value > 0);
+}
+
 function detectPageType(urlStr: string, text: string, formsData: FormData[]): PageType {
   const url = new URL(urlStr);
   const hostname = url.hostname.replace(/^www\./, '');
@@ -133,31 +281,25 @@ function detectPageType(urlStr: string, text: string, formsData: FormData[]): Pa
   const textLower = text.toLowerCase();
 
   if (isExcludedPlatform(hostname, pathname)) {
-    console.log('is excluded platform');
     return PageType.NOT_PRODUCT_PAGE;
   }
 
   if (isSearchResultsPage(hostname, pathname, url.search)) {
-    console.log('isSearchResultsPage');
     return PageType.NOT_PRODUCT_PAGE;
   }
 
   if (isVideoOrContentPlatform(hostname)) {
-    console.log('isVideoOrContentPlatform');
     return PageType.NOT_PRODUCT_PAGE;
   }
 
   if (hasStrongProductPageSignals(textLower, formsData)) {
-    console.log('hasStrongProductPageSignals');
-    return PageType.SUSPICIOUS_SHOP_PAGE;
+    return PageType.PRODUCT_PAGE;
   }
 
   if (hasWeakProductWords(textLower)) {
-    console.log('hasWeakProductWords');
-    return PageType.NORMAL_SHOP_PAGE;
+    return PageType.PRODUCT_PAGE;
   }
 
-  console.log('default');
   return PageType.NOT_PRODUCT_PAGE;
 }
 
@@ -315,6 +457,8 @@ export function analyzePageData(pageData: PageData): AnalysisResult {
     checkAggressiveMarketing(pageData.text),
     checkLegalInfo(pageData.text),
     checkFormsRequireDeliveryInfo(pageData.formsData),
+    checkFakeReviews(pageData.text),
+    checkSuspiciousDiscount(pageData.text, pageData.pricesData),
     checkDomain(pageData.url),
   ];
 
