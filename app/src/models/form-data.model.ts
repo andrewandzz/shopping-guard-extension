@@ -3,5 +3,6 @@ export interface FormData {
   ids: string[];
   names: string[];
   labels: string[];
+  placeholders: string[];
   buttons: string[];
 }

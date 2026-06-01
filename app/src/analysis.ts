@@ -171,8 +171,7 @@ function checkSuspiciousDiscount(text: string, pricesData: PriceData[]): Analysi
   const hasStructuredSuspiciousPriceDrop = hasSuspiciousPriceDrop(pricesData);
   const hasTextSuspiciousPriceDrop = hasNearbySuspiciousPriceDrop(textLower);
 
-  const hasSuspiciousDiscount =
-    hasStructuredSuspiciousPriceDrop || hasTextSuspiciousPriceDrop;
+  const hasSuspiciousDiscount = hasStructuredSuspiciousPriceDrop ?? hasTextSuspiciousPriceDrop;
 
   return {
     id: 'discount',
@@ -181,11 +180,13 @@ function checkSuspiciousDiscount(text: string, pricesData: PriceData[]): Analysi
   };
 }
 
-function hasSuspiciousPriceDrop(pricesData: PriceData[]): boolean {
+function hasSuspiciousPriceDrop(pricesData: PriceData[]): boolean | null {
   const oldPrices = pricesData.filter((price) => price.value !== null && isOldPrice(price));
   const newPrices = pricesData.filter((price) => price.value !== null && isNewPrice(price));
 
   const suspiciousDiscountThreshold = 40;
+
+  let foundPrice = false;
 
   for (const oldPrice of oldPrices) {
     for (const newPrice of newPrices) {
@@ -197,6 +198,8 @@ function hasSuspiciousPriceDrop(pricesData: PriceData[]): boolean {
         continue;
       }
 
+      foundPrice = true;
+
       const discountPercent =
         ((oldPrice.value - newPrice.value) / oldPrice.value) * 100;
 
@@ -206,7 +209,11 @@ function hasSuspiciousPriceDrop(pricesData: PriceData[]): boolean {
     }
   }
 
-  return false;
+  if (foundPrice) {
+    return false;
+  } else {
+    return null;
+  }
 }
 
 function isOldPrice(price: PriceData): boolean {
@@ -363,26 +370,13 @@ function isVideoOrContentPlatform(hostname: string): boolean {
 function hasStrongProductPageSignals(textLower: string, formsData: FormData[]): boolean {
   const hasPrice = /\d+[\s.,]?\d*\s*(грн|₴|uah|usd|\$|eur|€)/i.test(textLower);
 
-  const hasBuyButton = formsData.some(form => {
-    const buttonsText = form.buttons.join(' ').toLowerCase();
-
-    return (
-      buttonsText.includes('купити') ||
-      buttonsText.includes('замовити') ||
-      buttonsText.includes('додати в кошик') ||
-      buttonsText.includes('оформити замовлення') ||
-      buttonsText.includes('buy') ||
-      buttonsText.includes('order') ||
-      buttonsText.includes('add to cart')
-    );
-  });
-
   const hasOrderForm = formsData.some(form => {
     const formText = [
       form.text,
       ...form.labels,
       ...form.names,
       ...form.ids,
+      ...form.placeholders,
       ...form.buttons
     ].join(' ').toLowerCase();
 
@@ -412,9 +406,8 @@ function hasStrongProductPageSignals(textLower: string, formsData: FormData[]): 
     textLower.includes('delivery');
 
   return (
-    hasPrice && hasBuyButton ||
     hasOrderForm ||
-    hasPrice && hasDeliveryOrPayment
+    (hasPrice && hasDeliveryOrPayment)
   );
 }
 

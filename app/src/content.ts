@@ -32,9 +32,22 @@ function collectFormsData(): FormData[] {
       labels: Array.from(form.querySelectorAll<HTMLField>("input, textarea, select"))
         .map(getFieldLabel)
         .filter((label) => label !== ""),
-      buttons: Array.from(form.querySelectorAll("button"))
-        .map((button) => button.innerText)
-        .filter((button) => button !== ""),
+      placeholders: Array.from(form.querySelectorAll<HTMLField>("input, textarea, select"))
+        .map((field) => field.getAttribute('placeholder') || '')
+        .filter((placeholder) => placeholder.trim() !== ''),
+      buttons: Array.from(
+        form.querySelectorAll<HTMLButtonElement | HTMLInputElement>(
+          "button, input[type='submit'], input[type='button']"
+        )
+      )
+        .map((button) => {
+          if (button instanceof HTMLInputElement) {
+            return button.value || '';
+          }
+
+          return button.innerText || '';
+        })
+        .filter((button) => button.trim() !== ''),
     };
   });
 

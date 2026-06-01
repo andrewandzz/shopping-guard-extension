@@ -35,6 +35,7 @@ export const CONFIG = {
       newPrice: {
         substrings: [
           'new',
+          'red',
           'sale',
           'current',
           'special',
