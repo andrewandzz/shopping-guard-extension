@@ -29,21 +29,23 @@
         </span>
       </button>
 
-      <button type="button" class="menu-item" (click)="toggleMarkSiteAsSafe()">
-        <span *ngIf="!isSiteMarkedAsSafe" class="material-symbols-outlined menu-icon">verified_user</span>
-        <span *ngIf="!isSiteMarkedAsSafe">Позначити сайт як безпечний</span>
+      <ng-container *ngIf="canUseSiteRules">
+        <button type="button" class="menu-item" (click)="toggleMarkSiteAsSafe()">
+          <span *ngIf="!isSiteMarkedAsSafe" class="material-symbols-outlined menu-icon">verified_user</span>
+          <span *ngIf="!isSiteMarkedAsSafe">Позначити сайт як безпечний</span>
 
-        <span *ngIf="isSiteMarkedAsSafe" class="material-symbols-outlined menu-icon">dangerous</span>
-        <span *ngIf="isSiteMarkedAsSafe">Зняти позначку сайту як безпечний</span>
-      </button>
+          <span *ngIf="isSiteMarkedAsSafe" class="material-symbols-outlined menu-icon">dangerous</span>
+          <span *ngIf="isSiteMarkedAsSafe">Зняти позначку сайту як безпечний</span>
+        </button>
 
-      <button type="button" class="menu-item" (click)="toggleIgnoreSite()">
-        <span *ngIf="!isSiteIgnored" class="material-symbols-outlined menu-icon">stop_circle</span>
-        <span *ngIf="!isSiteIgnored">Не аналізувати цей сайт</span>
+        <button type="button" class="menu-item" (click)="toggleIgnoreSite()">
+          <span *ngIf="!isSiteIgnored" class="material-symbols-outlined menu-icon">stop_circle</span>
+          <span *ngIf="!isSiteIgnored">Не аналізувати цей сайт</span>
 
-        <span *ngIf="isSiteIgnored" class="material-symbols-outlined menu-icon">play_circle</span>
-        <span *ngIf="isSiteIgnored">Аналізувати цей сайт</span>
-      </button>
+          <span *ngIf="isSiteIgnored" class="material-symbols-outlined menu-icon">play_circle</span>
+          <span *ngIf="isSiteIgnored">Аналізувати цей сайт</span>
+        </button>
+      </ng-container>
 
       <div class="menu-divider"></div>
 

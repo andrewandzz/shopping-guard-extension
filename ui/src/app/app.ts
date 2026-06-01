@@ -68,22 +68,28 @@ export class App implements OnInit, OnDestroy {
       currentWindow: true,
     });
 
-    //     if (!tab) return;
+    if (!tab?.id) {
+      this.analysis = this.createNotAnalyzedResult(tab);
+      this.isLoading = false;
+      this.cdr.detectChanges();
+      return;
+    }
 
     const analysisKey = `analysis_${tab.id}`;
+    const storedAnalysis = await this.analysisStorage.getAnalysisResult(analysisKey);
 
-    this.analysis = await this.analysisStorage.getAnalysisResult(analysisKey);
-
+    this.analysis = storedAnalysis ?? this.createNotAnalyzedResult(tab);
     this.isLoading = false;
 
-    this.stopWatchingAnalysis = this.analysisStorage.watchAnalysis(analysisKey,
-      (analysis) => {
-        this.analysis = analysis;
-        this.cdr.detectChanges();
-      });
+    this.stopWatchingAnalysis = this.analysisStorage.watchAnalysis(analysisKey, (analysis) => {
+      this.analysis = analysis ?? this.createNotAnalyzedResult(tab);
+      this.cdr.detectChanges();
+    });
 
-    this.isSiteMarkedAsSafe = await this.siteRulesService.isSiteMarkedAsSafe(this.analysis?.domain!);
-    this.isSiteIgnored = await this.siteRulesService.isSiteIgnored(this.analysis?.domain!);
+    if (this.analysis.domain !== null) {
+      this.isSiteMarkedAsSafe = await this.siteRulesService.isSiteMarkedAsSafe(this.analysis.domain);
+      this.isSiteIgnored = await this.siteRulesService.isSiteIgnored(this.analysis.domain);
+    }
 
     this.cdr.detectChanges();
 
@@ -190,7 +196,7 @@ export class App implements OnInit, OnDestroy {
 
     switch (this.analysis?.status) {
       case AnalysisStatus.NOT_ANALYZED:
-        return 'Сайт було виключено з аналізу.';
+        return 'Сайт не було проаналізовано.';
       case AnalysisStatus.ANALYZING:
         return 'Сторінка аналізується...';
       case AnalysisStatus.NOT_APPLICABLE:
@@ -205,11 +211,19 @@ export class App implements OnInit, OnDestroy {
   }
 
   get pageTypeLabel(): string {
-    return PAGE_TYPE_CONFIG[this.analysis?.pageType!].label;
+    if (!this.analysis?.pageType) {
+      return 'Не визначено';
+    }
+
+    return PAGE_TYPE_CONFIG[this.analysis.pageType].label;
   }
 
   get riskScore(): string {
-    if (!this.analysis || this.analysis.totalScore == null) {
+    if (this.analysis?.status !== AnalysisStatus.ANALYZED) {
+      return '—';
+    }
+
+    if (this.analysis.totalScore == null) {
       return '—';
     }
 
@@ -217,58 +231,23 @@ export class App implements OnInit, OnDestroy {
   }
 
   get riskScoreLabel(): string {
-    if (!this.analysis || this.analysis.riskLevel == null) {
-      return '';
+    if (this.analysis?.status !== AnalysisStatus.ANALYZED || !this.analysis.riskLevel) {
+      return 'Оцінка ризику відсутня';
     }
 
     return RISK_LEVEL_CONFIG[this.analysis.riskLevel].label;
   }
 
-  // get currentUrlPattern(): string {
-  //   if (!this.analysis?.url) {
-  //     return '*';
-  //   }
-
-  //   try {
-  //     const url = new URL(this.analysis.url);
-  //     return url.hostname;
-  //   } catch {
-  //     return this.analysis.url;
-  //   }
-  // }
-
   get shouldShowSignals(): boolean {
     return this.failedChecks.length > 0;
   }
 
-  // get detailsText(): string {
-  //   if (!this.analysis) {
-  //     return 'Результат аналізу відсутній.';
-  //   }
-
-  //   const parts: string[] = [];
-
-  //   if (this.analysis.url) {
-  //     parts.push(`Сторінка: ${this.analysis.url}`);
-  //   }
-
-  //   if (this.analysis.analyzedAt) {
-  //     parts.push(`Дата аналізу: ${new Date(this.analysis.analyzedAt).toLocaleString()}`);
-  //   }
-
-  //   if (this.analysis.riskSignals.length > 0) {
-  //     const signals = this.analysis.riskSignals
-  //       .map((signal) => `• ${signal.message} (${signal.score})`)
-  //       .join('\n');
-
-  //     parts.push(`Виявлені ознаки:\n${signals}`);
-  //   }
-
-  //   return parts.join('\n\n') || 'Детальна інформація відсутня.';
-  // }
-
   get pageTypeDescription(): string {
-    return PAGE_TYPE_CONFIG[this.analysis?.pageType!].description;
+    if (!this.analysis?.pageType) {
+      return 'Тип сторінки не визначено, оскільки аналіз не виконувався.';
+    }
+
+    return PAGE_TYPE_CONFIG[this.analysis.pageType].description;
   }
 
   get checks(): { icon: string, label: string, value: string, status: 'passed' | 'failed', message: string }[] {
@@ -287,6 +266,13 @@ export class App implements OnInit, OnDestroy {
 
   get failedChecks(): { label: string, value: string, status: 'passed' | 'failed', message: string }[] {
     return this.checks.filter(check => check.status === 'failed');
+  }
+
+  get canUseSiteRules(): boolean {
+    return !!this.analysis?.domain &&
+      this.analysis.domain !== null &&
+      this.analysis.domain !== 'chrome' &&
+      this.analysis.domain !== 'about';
   }
 
   toggleMenu(): void {
@@ -439,5 +425,32 @@ export class App implements OnInit, OnDestroy {
   closeAbout(): void {
     this.isAboutOpen = false;
     this.cdr.detectChanges();
+  }
+
+  private createNotAnalyzedResult(tab?: chrome.tabs.Tab): AnalysisResult {
+    return {
+      status: AnalysisStatus.NOT_ANALYZED,
+      domain: this.getDomainFromTab(tab) ?? 'Недоступно',
+      checks: [],
+      totalScore: 0,
+    };
+  }
+
+  private getDomainFromTab(tab?: chrome.tabs.Tab): string | null {
+    if (!tab?.url) {
+      return null;
+    }
+
+    try {
+      const url = new URL(tab.url);
+
+      if (url.protocol === 'http:' || url.protocol === 'https:') {
+        return url.hostname;
+      }
+
+      return url.protocol.replace(':', '');
+    } catch {
+      return null;
+    }
   }
 }
