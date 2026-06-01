@@ -15,7 +15,6 @@ export class AnalysisResultStorageService {
     return items[analysisKey] as AnalysisResult ?? null;
   }
 
-  // TODO: check maybe not needed
   async saveAnalysisResult(analysisResult: AnalysisResult, analysisKey: string): Promise<void> {
     if (!this.isChromeStorageAvailable()) {
       return;
@@ -54,20 +53,6 @@ export class AnalysisResultStorageService {
       chrome.storage.onChanged.removeListener(listener);
     };
   }
-
-  // async rerunAnalysis(): Promise<void> {
-  //   if (!chrome?.runtime?.sendMessage) {
-  //     return;
-  //   }
-
-  //   try {
-  //     await chrome.runtime.sendMessage({
-  //       type: 'RERUN_ANALYSIS', // TODO: add to background.ts
-  //     });
-  //   } catch {
-  //     // Якщо background ще не має такого listener, просто ігноруємо помилку.
-  //   }
-  // }
 
   private isChromeStorageAvailable(): boolean {
     return typeof chrome !== 'undefined' && !!chrome.storage?.local;

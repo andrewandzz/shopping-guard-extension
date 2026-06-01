@@ -27,7 +27,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     // no analysis conducted
     const analysisResult: AnalysisResult = {
       status: AnalysisStatus.NOT_ANALYZED,
-      domain: domain, // TODO: maybe not needed
+      domain: domain,
     };
 
     updateExtensionStatus(tabId, 'neutral');

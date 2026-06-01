@@ -9,8 +9,6 @@ import {
 import { AnalysisResult } from './models/analysis-result.model';
 import { AnalysisStatus } from './models/analysis-status.model';
 import { Settings } from './models/settings.model';
-// import { PageType } from './models/page-type.model';
-// import { RiskLevel } from './models/risk-level.model';
 
 import { AnalysisResultStorageService } from './services/analysis-result-storage.service';
 import { SettingsService } from './services/settings.service';
@@ -19,14 +17,19 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { CHECK_CONFIG, ICON_CONFIG, PAGE_TYPE_CONFIG, RISK_LEVEL_CONFIG } from './config/config';
 import { MatIconModule } from '@angular/material/icon';
 
-// type RiskTheme = 'high' | 'medium' | 'low' | 'neutral';
+const FALSE_POSITIVE_FORM_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSeKDA_BINl5N1MP14AmW6ApdHZ9AlOZNDOkhpdj_ou1jb80Gg/viewform';
 
-// interface RiskUiConfig {
-//   title: string;
-//   message: string;
-//   theme: RiskTheme;
-//   icon: 'warning' | 'check' | 'unknown';
-// }
+const FALSE_POSITIVE_FORM_FIELDS = {
+  pageUrl: 'entry.1235102305',
+  domain: 'entry.2129313956',
+  pageType: 'entry.870049425',
+  riskLevel: 'entry.2108875274',
+  totalScore: 'entry.1060870085',
+  failedChecks: 'entry.1930686353',
+  comment: 'entry.52978000',
+};
+
 
 @Component({
   selector: 'app-root',
@@ -38,6 +41,7 @@ import { MatIconModule } from '@angular/material/icon';
 export class App implements OnInit, OnDestroy {
   analysis: AnalysisResult | null = null;
 
+  currentPageUrl = '';
   isLoading = true;
   isMenuOpen = false;
   isDetailsOpen = false;
@@ -74,6 +78,8 @@ export class App implements OnInit, OnDestroy {
       this.cdr.detectChanges();
       return;
     }
+
+    this.currentPageUrl = tab?.url || '';
 
     const analysisKey = `analysis_${tab.id}`;
     const storedAnalysis = await this.analysisStorage.getAnalysisResult(analysisKey);
@@ -275,6 +281,11 @@ export class App implements OnInit, OnDestroy {
       this.analysis.domain !== 'about';
   }
 
+  get canReportFalsePositive(): boolean {
+    return !!this.analysis &&
+      this.analysis.status === AnalysisStatus.ANALYZED;
+  }
+
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
   }
@@ -296,8 +307,6 @@ export class App implements OnInit, OnDestroy {
 
     this.isLoading = true;
     this.cdr.detectChanges();
-
-    // await this.analysisStorage.rerunAnalysis();
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
@@ -410,10 +419,31 @@ export class App implements OnInit, OnDestroy {
   }
 
   reportFalsePositive(): void {
-    this.closeMenu();
+    if (!this.analysis) {
+      return;
+    }
 
-    // TODO: add report
-    console.log('Report false positive');
+    const failedChecks = this.analysis.checks
+      ?.filter((check) => check.status === 'failed')
+      .map((check) => check.id)
+      .join(', ') || 'Немає';
+
+    const params = new URLSearchParams({
+      usp: 'pp_url',
+
+      [FALSE_POSITIVE_FORM_FIELDS.pageUrl]: this.currentPageUrl,
+      [FALSE_POSITIVE_FORM_FIELDS.domain]: this.analysis.domain || 'Не визначено',
+      [FALSE_POSITIVE_FORM_FIELDS.pageType]: this.pageTypeLabel || 'Не визначено',
+      [FALSE_POSITIVE_FORM_FIELDS.riskLevel]: this.riskLabel || 'Не визначено',
+      [FALSE_POSITIVE_FORM_FIELDS.totalScore]: String(this.analysis.totalScore ?? '—'),
+      [FALSE_POSITIVE_FORM_FIELDS.failedChecks]: failedChecks,
+
+      [FALSE_POSITIVE_FORM_FIELDS.comment]: '',
+    });
+
+    chrome.tabs.create({
+      url: `${FALSE_POSITIVE_FORM_URL}?${params.toString()}`,
+    });
   }
 
   openAbout(): void {

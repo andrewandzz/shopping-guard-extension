@@ -5,7 +5,7 @@ import { Settings } from '../models/settings.model';
   providedIn: 'root',
 })
 export class SettingsService {
-  private readonly settingsKey = 'settings'; // TODO: check in storage
+  private readonly settingsKey = 'settings';
 
   private readonly defaultSettings: Settings = {
     showDetailsAutomatically: false,

@@ -49,12 +49,14 @@
 
       <div class="menu-divider"></div>
 
-      <button type="button" class="menu-item" (click)="reportFalsePositive()">
-        <span class="material-symbols-outlined menu-icon">notifications</span>
-        <span>Повідомити про помилкове спрацювання</span>
-      </button>
+      <ng-container *ngIf="canReportFalsePositive">
+        <button type="button" class="menu-item" (click)="reportFalsePositive(); closeMenu()">
+          <span class="material-symbols-outlined menu-icon">notifications</span>
+          <span>Повідомити про помилкове спрацювання</span>
+        </button>
 
-      <div class="menu-divider"></div>
+        <div class="menu-divider"></div>
+      </ng-container>
 
       <button type="button" class="menu-item" (click)="openAbout()">
         <span class="material-symbols-outlined menu-icon">info</span>
