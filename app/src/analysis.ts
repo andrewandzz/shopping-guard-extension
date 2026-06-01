@@ -113,14 +113,22 @@ function checkFormsRequireDeliveryInfo(formsData: FormData[]): AnalysisCheck {
 function checkDomain(url: string): AnalysisCheck {
   const hostname = new URL(url).hostname.toLowerCase();
 
-  const hasSuspiciousZone = CONFIG.domainZones.suspicious.some((zone) =>
+  const hasHighRiskZone = CONFIG.domainZones.highRisk.some((zone) =>
+    hostname.endsWith(zone),
+  );
+
+  const hasMediumRiskZone = CONFIG.domainZones.mediumRisk.some((zone) =>
     hostname.endsWith(zone),
   );
 
   return {
     id: 'domain_zone',
-    status: hasSuspiciousZone ? 'failed' : 'passed',
-    riskScore: CONFIG.checks.domainZone.riskScore,
+    status: hasHighRiskZone || hasMediumRiskZone ? 'failed' : 'passed',
+    riskScore: hasHighRiskZone
+      ? CONFIG.checks.domainZone.riskScore
+      : hasMediumRiskZone
+        ? 1
+        : 0,
   };
 }
 
