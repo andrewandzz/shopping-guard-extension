@@ -8,31 +8,23 @@ import { PageType } from "./models/page-type.model";
 import { RiskLevel } from "./models/risk-level.model";
 
 /**
- * 
+ * Checks whether the page text contains information about return policy.
  */
 function checkReturnPolicy(text: string): AnalysisCheck {
-  const textLower = text.toLowerCase();
-
-  const hasReturnInfo = CONFIG.keywords.return.some((keyword) =>
-    textLower.includes(keyword),
-  );
+  const hasReturnPolicy = hasAnyKeywordGroup(text.toLowerCase(), CONFIG.keywords.return);
 
   return {
     id: 'return_policy',
-    status: hasReturnInfo ? 'passed' : 'failed',
+    status: hasReturnPolicy ? 'passed' : 'failed',
     riskScore: CONFIG.checks.returnPolicy.riskScore
   }
 }
 
 /**
- * 
+ * Checks whether the page text contains information about warranty.
  */
 function checkWarranty(text: string): AnalysisCheck {
-  const textLower = text.toLowerCase();
-
-  const hasWarrantyInfo = CONFIG.keywords.warranty.some((keyword) =>
-    textLower.includes(keyword),
-  );
+  const hasWarrantyInfo = hasAnyKeywordGroup(text.toLowerCase(), CONFIG.keywords.warranty);
 
   return {
     id: 'warranty',
@@ -42,31 +34,23 @@ function checkWarranty(text: string): AnalysisCheck {
 }
 
 /**
- * 
+ * Checks whether the page text contains contacts information.
  */
 function checkContacts(text: string): AnalysisCheck {
-  const textLower = text.toLowerCase();
-
-  const hasContacts = CONFIG.keywords.contact.some((keyword) =>
-    textLower.includes(keyword),
-  );
+  const hasContatsInfo = hasAnyKeywordGroup(text.toLowerCase(), CONFIG.keywords.contact);
 
   return {
     id: 'contacts',
-    status: hasContacts ? 'passed' : 'failed',
+    status: hasContatsInfo ? 'passed' : 'failed',
     riskScore: CONFIG.checks.contacts.riskScore
   }
 }
 
 /**
- * 
+ * Checks whether the page text contains agressive marketing trigger words.
  */
 function checkAggressiveMarketing(text: string): AnalysisCheck {
-  const textLower = text.toLowerCase();
-
-  const hasAggressiveMarketing = CONFIG.keywords.aggressiveMarketing.some(
-    (keyword) => textLower.includes(keyword),
-  );
+  const hasAggressiveMarketing = hasAnyKeywordGroup(text.toLowerCase(), CONFIG.keywords.aggressiveMarketing);
 
   return {
     id: 'aggressive_marketing',
@@ -84,14 +68,10 @@ function checkPrice(text: string): AnalysisCheck {
 }
 
 /**
- * 
+ * Checks whether the page text contains legal information. 
  */
 function checkLegalInfo(text: string): AnalysisCheck {
-  const textLower = text.toLowerCase();
-
-  const hasLegalInfo = CONFIG.keywords.legal.some((word) =>
-    textLower.includes(word),
-  );
+  const hasLegalInfo = hasAnyKeywordGroup(text.toLowerCase(), CONFIG.keywords.legal);
 
   return {
     id: 'legal_info',
@@ -118,17 +98,9 @@ function checkFormsRequireDeliveryInfo(formsData: FormData[]): AnalysisCheck {
       .join(' ')
       .toLowerCase();
 
-    const hasNameField = CONFIG.keywords.form.name.some((keyword) =>
-      formContent.includes(keyword),
-    );
-
-    const hasPhoneField = CONFIG.keywords.form.phone.some((keyword) =>
-      formContent.includes(keyword),
-    );
-
-    const hasDeliveryField = CONFIG.keywords.form.delivery.some((keyword) =>
-      formContent.includes(keyword),
-    );
+    const hasNameField = hasAnyKeywordGroup(formContent, CONFIG.keywords.form.name);
+    const hasPhoneField = hasAnyKeywordGroup(formContent, CONFIG.keywords.form.phone);
+    const hasDeliveryField = hasAnyKeywordGroup(formContent, CONFIG.keywords.form.delivery);
 
     return hasNameField && hasPhoneField && !hasDeliveryField;
   });
@@ -143,19 +115,15 @@ function checkFormsRequireDeliveryInfo(formsData: FormData[]): AnalysisCheck {
 function checkDomain(url: string): AnalysisCheck {
   const hostname = new URL(url).hostname.toLowerCase();
 
-  const hasTrustedZone = CONFIG.domainZones.trusted.some((zone) =>
-    hostname.endsWith(zone),
-  );
-
   const hasSuspiciousZone = CONFIG.domainZones.suspicious.some((zone) =>
     hostname.endsWith(zone),
   );
 
   return {
     id: 'domain_zone',
-    status: hasTrustedZone && !hasSuspiciousZone ? 'passed' : 'failed',
-    riskScore: CONFIG.checks.domainZone.riskScore
-  }
+    status: hasSuspiciousZone ? 'failed' : 'passed',
+    riskScore: CONFIG.checks.domainZone.riskScore,
+  };
 }
 
 function detectPageType(urlStr: string, text: string, formsData: FormData[]): PageType {
@@ -251,13 +219,7 @@ function isVideoOrContentPlatform(hostname: string): boolean {
 }
 
 function hasStrongProductPageSignals(textLower: string, formsData: FormData[]): boolean {
-  // const text = text.toLowerCase();
-
-  console.log(textLower);
-
   const hasPrice = /\d+[\s.,]?\d*\s*(грн|₴|uah|usd|\$|eur|€)/i.test(textLower);
-
-  console.log('hasPrice' + hasPrice);
 
   const hasBuyButton = formsData.some(form => {
     const buttonsText = form.buttons.join(' ').toLowerCase();
@@ -272,8 +234,6 @@ function hasStrongProductPageSignals(textLower: string, formsData: FormData[]): 
       buttonsText.includes('add to cart')
     );
   });
-
-  console.log('hasBuyButton' + hasBuyButton);
 
   const hasOrderForm = formsData.some(form => {
     const formText = [
@@ -302,16 +262,12 @@ function hasStrongProductPageSignals(textLower: string, formsData: FormData[]): 
     return hasNameField && hasPhoneField && hasOrderAction;
   });
 
-  console.log('hasOrderForm' + hasOrderForm);
-
   const hasDeliveryOrPayment =
     textLower.includes('доставка') ||
     textLower.includes('оплата') ||
     textLower.includes('накладений платіж') ||
     textLower.includes('payment') ||
     textLower.includes('delivery');
-
-  console.log('hasDeliveryOrPayment' + hasDeliveryOrPayment);
 
   return (
     hasPrice && hasBuyButton ||
@@ -405,4 +361,40 @@ function calculateRiskLevel(totalScore: number) {
   }
 
   return RiskLevel.LOW;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasWholeWord(text: string, word: string): boolean {
+  const escapedWord = escapeRegExp(word);
+
+  const regex = new RegExp(
+    `(^|[^\\p{L}\\p{N}_])${escapedWord}($|[^\\p{L}\\p{N}_])`,
+    'iu',
+  );
+
+  return regex.test(text);
+}
+
+function hasAnySubstring(text: string, words: string[]): boolean {
+  return words.some((word) => text.includes(word));
+}
+
+function hasAnyWholeWord(text: string, words: string[]): boolean {
+  return words.some((word) => hasWholeWord(text, word));
+}
+
+function hasAnyKeywordGroup(
+  text: string,
+  keywords: {
+    substrings?: string[];
+    wholeWords?: string[];
+  },
+): boolean {
+  return (
+    hasAnySubstring(text, keywords.substrings ?? []) ||
+    hasAnyWholeWord(text, keywords.wholeWords ?? [])
+  );
 }
