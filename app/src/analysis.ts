@@ -51,21 +51,15 @@ function checkContacts(text: string): AnalysisCheck {
  * Checks whether the page text contains agressive marketing trigger words.
  */
 function checkAggressiveMarketing(text: string): AnalysisCheck {
-  const hasAggressiveMarketing = hasAnyKeywordGroup(text.toLowerCase(), CONFIG.keywords.aggressiveMarketing);
+  const textLower = text.toLowerCase();
+  const keywordsCount = CONFIG.keywords.aggressiveMarketing.substrings.filter(keyword => textLower.includes(keyword)).length;
+  const hasAggressiveMarketing = keywordsCount > 1;
 
   return {
     id: 'aggressive_marketing',
-    status: !hasAggressiveMarketing ? 'passed' : 'failed',
+    status: hasAggressiveMarketing ? 'failed' : 'passed',
     riskScore: CONFIG.checks.aggressiveMarketing.riskScore
   }
-}
-
-function checkReviews(text: string): AnalysisCheck {
-  throw new Error('Not implemented');
-}
-
-function checkPrice(text: string): AnalysisCheck {
-  throw new Error('Not implemented');
 }
 
 /**
@@ -287,15 +281,15 @@ function detectPageType(urlStr: string, text: string, formsData: FormData[]): Pa
   const pathname = url.pathname.toLowerCase();
   const textLower = text.toLowerCase();
 
-  if (isExcludedPlatform(hostname, pathname)) {
-    return PageType.NOT_PRODUCT_PAGE;
-  }
-
   if (isSearchResultsPage(hostname, pathname, url.search)) {
     return PageType.NOT_PRODUCT_PAGE;
   }
 
   if (isVideoOrContentPlatform(hostname)) {
+    return PageType.NOT_PRODUCT_PAGE;
+  }
+
+  if (isExcludedPlatform(hostname, pathname)) {
     return PageType.NOT_PRODUCT_PAGE;
   }
 
